@@ -1,0 +1,12 @@
+SAFARITIME - CHANGELOG
+Versioning scheme: v#.#.#-[stage] (semver)
+Patch = fixes | Minor = new content (patch resets) | Major 0 until launch (v1.0.0)
+Stages: -alpha -> -beta at feature-complete -> -rc1 when launch-ready -> v1.0.0 gold
+A bump renames the build root folder and adds an entry here; working files keep their names.
+Archived (outgoing-version) copies live in _version_archive/, never in the build folder.
+
+v0.1.0-alpha (2026-09-08)
+- Initial release.
+- 01_Design_Core/Game_Overview.md: rules, wagering, feature, presentation, open decisions.
+- 02_Math_Model/Math_Spec.md: how the exact solver, Monte Carlo and tuner work.
+- 02_Math_Model/Par_Sheet.md: generated par sheet (strips, paytable, contributions, RTP 92.39%).
