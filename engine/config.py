@@ -24,8 +24,9 @@ SYMBOL_NAMES = {
     WILD: "Wild", AFRICA: "Africa",
 }
 
-# Symbols with their own paytable entry; these can start a line chain.
-PAY_SYMBOLS = (J, Q, K, A, GIRAFFE, ZEBRA, RHINO, ELEPHANT, LION)
+# Symbols with their own paytable entry, lowest pay first. Giraffe out-pays
+# Zebra in the reference paytable, so the order differs from the raw IDs.
+PAY_SYMBOLS = (J, Q, K, A, ZEBRA, GIRAFFE, RHINO, ELEPHANT, LION)
 
 # ---------------------------------------------------------------------------
 # 2. CABINET / WAGERING
@@ -96,19 +97,23 @@ assert len(PAYLINES) == LINES
 # 6. PAYTABLE
 # ---------------------------------------------------------------------------
 # Award as a MULTIPLE OF THE LINE BET, indexed by chain length (3, 4, 5).
-# Solved for the RTP target by engine/tune.py.
+#
+# This is the reference game's paytable (IGT "The Wild Life", $0.40 line bet)
+# halved for Montana's $0.20 maximum line bet - e.g. Lion x5 = $125.00 at
+# $0.20 = 625x. The paytable is FIXED; RTP is solved by weighting the reel
+# strips (section 8), not by scaling these figures.
 
 PAYTABLE = {
-    #            3    4     5
-    J:        (  9,  32,  110),
-    Q:        (  9,  32,  110),
-    K:        ( 18,  65,  170),
-    A:        ( 18,  65,  170),
-    GIRAFFE:  ( 28,  85,  280),
-    ZEBRA:    ( 28, 130,  375),
-    RHINO:    ( 38, 185,  560),
-    ELEPHANT: ( 75, 325,  900),
-    LION:     (110, 420, 1400),
+    #            3    4     5      at $0.20/line:   3        4        5
+    J:        (  5,  10,   50),   #             $1.00    $2.00   $10.00
+    Q:        (  5,  10,   50),
+    K:        ( 10,  20,   75),   #             $2.00    $4.00   $15.00
+    A:        ( 10,  20,   75),
+    ZEBRA:    ( 15,  50,  100),   #             $3.00   $10.00   $20.00
+    GIRAFFE:  ( 20,  75,  200),   #             $4.00   $15.00   $40.00
+    RHINO:    ( 25, 100,  300),   #             $5.00   $20.00   $60.00
+    ELEPHANT: ( 30, 150,  400),   #             $6.00   $30.00   $80.00
+    LION:     ( 50, 200,  625),   #            $10.00   $40.00  $125.00
 }
 
 
@@ -145,27 +150,48 @@ MAX_FREE_SPINS = 200            # safety cap should RETRIGGER be enabled
 # 8. VIRTUAL REEL STRIPS
 # ---------------------------------------------------------------------------
 # Symbol counts per 100-stop strip; each column must sum to STOPS.
-# Reels 1 and 5 are the two most restrictive strips and mirror each other, so
-# the maths is identical whichever end the chain is anchored on.
+#
+# With the paytable fixed, these weights ARE the RTP dial. The expanding Wild
+# is by far the strongest lever and compounds across adjacent middle reels:
+# with the reference paytable, 3 Wilds per middle reel gives ~64% base line
+# RTP, 4 gives ~88%, 5 gives ~117%. The 3-4-3 layout below lands the base at
+# ~72%, which with the 6.5% trigger prize and a ~13.5% feature makes ~92%.
+# Reels 1 and 5 mirror each other and carry the fewest high symbols, since
+# every chain is anchored on reel 1.
 
 BASE_COUNTS = {
     #            R1  R2  R3  R4  R5
-    J:        [ 21, 18, 18, 18, 21],
+    J:        [ 20, 13, 12, 13, 20],
     Q:        [ 18, 17, 16, 17, 18],
     K:        [ 16, 15, 15, 15, 16],
     A:        [ 14, 13, 13, 13, 14],
-    GIRAFFE:  [ 10, 11, 11, 11, 10],
-    ZEBRA:    [  8,  9, 10,  9,  8],
-    RHINO:    [  5,  7,  7,  7,  5],
-    ELEPHANT: [  3,  4,  4,  4,  3],
-    LION:     [  2,  2,  2,  2,  2],
-    WILD:     [  0,  1,  1,  1,  0],
+    ZEBRA:    [ 10, 11, 11, 11, 10],
+    GIRAFFE:  [  8,  9, 10,  9,  8],
+    RHINO:    [  6,  8,  8,  8,  6],
+    ELEPHANT: [  3,  5,  5,  5,  3],
+    LION:     [  2,  3,  3,  3,  2],
+    WILD:     [  0,  3,  4,  3,  0],
     AFRICA:   [  3,  3,  3,  3,  3],
 }
 
-# Free Games use the same strips today. Kept separate so the feature can be
-# weighted differently later without touching the base game.
-FEATURE_COUNTS = {sym: list(row) for sym, row in BASE_COUNTS.items()}
+# Free Games strips carry fewer Wilds (1-2-1) than the base game: a feature
+# Wild locks its reel for every remaining spin, so base-game density would
+# make three locked reels routine and blow the feature past the cap. The
+# reference game likewise notes its bonus reels have a different composition.
+FEATURE_COUNTS = {
+    #            R1  R2  R3  R4  R5
+    J:        [ 18, 15, 14, 15, 18],
+    Q:        [ 18, 17, 16, 17, 18],
+    K:        [ 16, 15, 15, 15, 16],
+    A:        [ 14, 13, 13, 13, 14],
+    ZEBRA:    [ 10, 11, 11, 11, 10],
+    GIRAFFE:  [  8,  9, 10,  9,  8],
+    RHINO:    [  6,  8,  8,  8,  6],
+    ELEPHANT: [  4,  5,  5,  5,  4],
+    LION:     [  3,  3,  3,  3,  3],
+    WILD:     [  0,  1,  2,  1,  0],
+    AFRICA:   [  3,  3,  3,  3,  3],
+}
 
 for _counts in (BASE_COUNTS, FEATURE_COUNTS):
     for _r in range(REELS):

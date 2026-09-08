@@ -16,6 +16,10 @@ Usage:
     python -m engine.tune --target 0.90
     python -m engine.tune --features 500000
 
+NOTE: since v0.4.0 the paytable is fixed to the reference game and RTP is
+solved by weighting the reels instead (see Math_Spec.md section 6). Use this
+only for what-if questions.
+
 It prints a PAYTABLE block to paste into engine/config.py - it does not edit
 the file for you. Re-run engine/simulate.py after pasting to confirm.
 """
