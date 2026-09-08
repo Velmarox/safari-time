@@ -89,6 +89,11 @@
   }
   .strip { display: flex; flex-direction: column; gap: var(--gap); will-change: transform; }
   .strip.blur { filter: blur(1.6px); }
+  /* Continuous roll while a reel is spinning: the strip holds one block of
+     cells twice, and the animation scrolls exactly one block, so it loops
+     seamlessly until the landing sequence takes over. */
+  @keyframes reelroll { from { transform: translateY(0); } to { transform: translateY(var(--roll)); } }
+  .strip.rolling { animation: reelroll 400ms linear infinite; }
   .reel.locked::after {
     content: ""; position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
     box-shadow: inset 0 0 0 3px var(--gold), inset 0 0 22px rgba(255, 210, 80, .55);
@@ -583,58 +588,73 @@
     }
 
     // ---------------------------------------------------------------- spin animation
-    // Reels roll and land one at a time, left to right, with a breath between
-    // landings so the anticipation can climb. Pressing STOP lands the rest fast.
-    const ROLL_MS = 600;           // one reel's roll before it lands
-    const PAUSE_MS = 320;          // breath between one landing and the next roll
-    const ANTICIPATION_MS = 1500;  // longer roll once two Africa are already showing
-    const FAST_MS = 110;           // per-reel roll after STOP
+    // Press PLAY: every reel rolls. Reel 1 lands, and each following reel keeps
+    // rolling until exactly one second after the previous landing. Pressing
+    // STOP lands whatever is still rolling straight away, in order.
+    const FIRST_LAND_MS = 800;     // reel 1 lands this long after PLAY
+    const LAND_INTERVAL_MS = 1000; // each next reel lands this long after the previous one
+    const LAND_MS = 360;           // the settle: last cells decelerating into place
+    const FAST_MS = 110;           // settle used after STOP
+    const ROLL_BLOCK = 10;         // cells per loop of the continuous roll
     const WHOLE_STEP = Math.pow(2, 2 / 12);
     const SCATTERS_TO_TRIGGER = 3;
+
+    function startRoll(i, strip, step) {
+      // One block of random cells, twice over, scrolled by exactly one block.
+      const block = Array.from({ length: ROLL_BLOCK }, () => strip[cryptoStop()]);
+      const el = reels[i].querySelector(".strip");
+      el.style.transition = "none";
+      el.style.transform = "translateY(0)";
+      el.style.setProperty("--roll", `${-ROLL_BLOCK * step}px`);
+      el.replaceChildren(...[...block, ...block].map(makeCell));
+      el.classList.add("blur", "rolling");
+    }
+
+    async function landReel(i, strip, finalWindow, step, dur) {
+      const el = reels[i].querySelector(".strip");
+      // Swap the loop for a landing run: lead cell, the final window, then a
+      // few fillers - and glide from the fillers up onto the final window.
+      const fillers = Array.from({ length: 6 }, () => strip[cryptoStop()]);
+      const seq = [strip[cryptoStop()], ...finalWindow, ...fillers];
+      el.classList.remove("rolling");
+      el.style.transition = "none";
+      el.replaceChildren(...seq.map(makeCell));
+      el.style.transform = `translateY(${-(seq.length - ROWS) * step}px)`;
+      void el.offsetHeight;                            // commit start position
+      el.style.transition = `transform ${dur}ms cubic-bezier(.18,.82,.28,1.09)`;
+      el.style.transform = `translateY(${-step}px)`;
+      await sleep(dur + 30);
+      el.classList.remove("blur");
+      el.style.transition = "none";
+      el.style.transform = "translateY(0)";
+      el.replaceChildren(...finalWindow.map(makeCell));
+    }
 
     async function spinReels(strips, prevGrid, finalGrid, lockedReels) {
       const cellH = reels[0].querySelector(".cell")?.getBoundingClientRect().height
         || parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell"));
       const gap = parseFloat(getComputedStyle($("window")).gap) || 4;
       const step = cellH + gap;
-      const FILL = 22;
       state.rolling = true; state.stopRequested = false;
       renderSpinButton();
       sfx("spins_start");
-      let africaHits = 0;
-      for (let i = 0; i < REELS; i++) {
-        if (lockedReels.has(i)) continue;
-        const reel = reels[i];
-        const strip = reel.querySelector(".strip");
-        // DOM order top->bottom: lead cell, final window, fillers ending in the previous window.
-        const lead = strips[i][cryptoStop()];
-        const fillers = [];
-        for (let k = 0; k < FILL - ROWS; k++) fillers.push(strips[i][cryptoStop()]);
-        const seq = [lead, ...finalGrid[i], ...fillers, ...prevGrid[i]];
-        strip.style.transition = "none";
-        strip.replaceChildren(...seq.map(makeCell));
-        strip.style.transform = `translateY(${-(seq.length - ROWS) * step}px)`;
-        strip.classList.add("blur");
-        void strip.offsetHeight;                       // commit start position
+      sfx("indiv_reel_spin", 0.55);
 
-        const fast = state.stopRequested;
-        const anticipating = !fast && africaHits >= SCATTERS_TO_TRIGGER - 1;
-        const dur = fast ? FAST_MS : anticipating ? ANTICIPATION_MS : ROLL_MS;
-        if (!fast) sfx("indiv_reel_spin", 0.55);
-        strip.style.transition = `transform ${dur}ms cubic-bezier(.18,.82,.28,1.09)`;
-        strip.style.transform = `translateY(${-step}px)`;
-        let landed = false;
-        const natural = sleep(dur + 40).then(() => { landed = true; });
-        await Promise.race([natural, waitStop()]);
-        if (!landed) {                                 // STOP pressed mid-roll: retarget and finish now
-          strip.style.transition = `transform ${FAST_MS}ms ease-out`;
-          strip.style.transform = `translateY(${-step}px)`;
-          await sleep(FAST_MS + 30);
+      const active = [];
+      for (let i = 0; i < REELS; i++) if (!lockedReels.has(i)) active.push(i);
+      active.forEach((i) => startRoll(i, strips[i], step));
+
+      const t0 = performance.now();
+      let landAt = FIRST_LAND_MS;                      // scheduled settle time of the next reel
+      let africaHits = 0;
+      for (let k = 0; k < active.length; k++) {
+        const i = active[k];
+        if (!state.stopRequested) {
+          const wait = t0 + landAt - LAND_MS - performance.now();
+          if (wait > 0) await Promise.race([sleep(wait), waitStop()]);
         }
-        strip.classList.remove("blur");
-        strip.style.transition = "none";
-        strip.style.transform = "translateY(0)";
-        strip.replaceChildren(...finalGrid[i].map(makeCell));
+        const fast = state.stopRequested;
+        await landReel(i, strips[i], finalGrid[i], step, fast ? FAST_MS : LAND_MS);
         sfx(i === REELS - 1 ? "reel_stop" : "reel_stop_click", 0.7);
 
         if (finalGrid[i].includes(ID.AFRICA)) {
@@ -646,7 +666,8 @@
             sfx("africa_symbol", 0.9, false, Math.pow(WHOLE_STEP, africaHits - 1));
           }
         }
-        if (i < REELS - 1 && !state.stopRequested) await sleep(PAUSE_MS);
+        landAt = fast ? 0 : landAt + LAND_INTERVAL_MS;
+        if (fast && k < active.length - 1) await sleep(60);
       }
       state.rolling = false;
       renderSpinButton();
