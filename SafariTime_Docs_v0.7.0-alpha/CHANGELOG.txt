@@ -5,6 +5,12 @@ Stages: -alpha -> -beta at feature-complete -> -rc1 when launch-ready -> v1.0.0 
 A bump renames the build root folder and adds an entry here; working files keep their names.
 Archived (outgoing-version) copies live in _version_archive/, never in the build folder.
 
+v0.7.0-alpha (2026-09-08)
+- The board. web/casino-ledger.js grows a corner pill: sign in with an Elo's Hoard name
+  and passcode and every settled play here also lands on boards/{uid} (name and per-game
+  plays / wagered / paid, never a balance) for the cross-game leaderboard at
+  merwinwebdesignz.com/work/games/leaderboard. Guests are unaffected.
+
 v0.6.0-alpha (2026-09-08)
 - The casino ledger. Every settled play reports bet, payout, whether the feature
   triggered and the bet level to the shared Firestore document ledgers/safari on the
