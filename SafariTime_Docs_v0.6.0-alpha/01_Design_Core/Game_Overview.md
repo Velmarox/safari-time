@@ -3,7 +3,7 @@
 **Format:** 5 reels x 3 rows, 10 fixed paylines, video slot.
 **Market:** Montana VGM route. Max bet $2.00, max payout $800 per play.
 **Theme:** African savanna - card royals (J Q K A), Zebras, Giraffes, Rhinos, Elephants, Lions (lowest to highest pay), a WILD and an AFRICA bonus medallion.
-**Target RTP:** 92%. Solved at **92.31%** (see `02_Math_Model/Par_Sheet.md`).
+**Target RTP:** 92%. Solved at **92.13%** (see `02_Math_Model/Par_Sheet.md`).
 
 ## Wagering
 

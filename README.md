@@ -54,8 +54,10 @@ python -m unittest tests.test_engine            # ~20s
 python -m engine.export      # regenerate web/gamedata.js after any config change
 ```
 
-Then open `web/index.html` in a browser, or serve the `web/` folder. Deployed
-with Firebase Hosting: `firebase deploy`.
+Then open `web/index.html` in a browser, or serve the `web/` folder. The game is
+served from the portfolio site (merwinwebdesignz.com/work/games/safari-time/play);
+safaritime.web.app only shows a moved notice. Do not `firebase deploy` from this repo -
+after changing `web/`, refresh the portfolio copy instead.
 
 ## Rules in one breath
 

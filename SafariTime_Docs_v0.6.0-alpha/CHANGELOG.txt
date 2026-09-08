@@ -11,8 +11,10 @@ v0.6.0-alpha (2026-09-08)
   elos-hoard project, through web/casino-ledger.js (an anonymous session, nothing about
   the player). One-way: nothing reads it back into play. The casino console at
   merwinwebdesignz.com/work/games/casinoadmin compares the observed return with the
-  92.31% the par sheet solves to, using the volatility index in Math_Spec section 8 for
+  92.13% the par sheet solves to, using the volatility index in Math_Spec section 8 for
   the spread. If the SDK or the network is missing the report is a no-op.
+- v0.5.0 was folded into this release from the working tree and never frozen separately;
+  there is no _version_archive/SafariTime_Docs_v0.5.0-alpha.
 - The game is served from the portfolio (merwinwebdesignz.com/work/games/safari-time/play);
   safaritime.web.app shows a moved notice. Do not firebase deploy from here.
 
@@ -20,7 +22,8 @@ v0.5.0-alpha (2026-09-08)
 - Maths: hit frequency brought to ~1 in 4.2 (was 1 in 3.5) to match the reference game's 1 in 4.01.
   Base Wilds 3-3-3 (were 3-4-3) with low-symbol stops moved to Lion/Elephant/Rhino - rarer
   symbols chain less often, so that adds return while removing hits; the feature strips gain a
-  few high symbols to make up the return. Total ~92% (par sheet regenerated).
+  few high symbols to make up the return. Total 92.13% (1M-feature par sheet); $2.00 full-game
+  91.55% +/-0.89%, hit rate 23.8% (1 in 4.19), volatility 5.6, cap hit 9 times in 400k plays.
 - Sound: separate mute buttons for the music and the slot effects (both remembered).
 - Layout: the machine scales with the screen - bounded by height on desktop, by width on phones -
   and every font follows the cell size; 44px touch targets; phone-landscape fallback.

@@ -67,8 +67,8 @@ Since v0.4.0 the paytable is fixed (the reference game's table at $0.20 per line
 
 ## 7. The $800 cap
 
-Applied once per play to base + feature. At $2.00 bet it is 400x. With the reference paytable (Lion x5 = 62.5x total bet) only a long feature with two or three locked reels gets near it: measured over 400,000 plays at $2.00 (v0.4.0 maths), the cap bit **once**, and the full-game RTP was 92.02% (+/-0.78% one sigma) against the uncapped model's 92.31%. At $0.50 bet the cap is 1600x and never applies in practice.
+Applied once per play to base + feature. At $2.00 bet it is 400x. With the reference paytable (Lion x5 = 62.5x total bet) only a long feature with two or three locked reels gets near it: measured over 400,000 plays at $2.00 (v0.5.0 maths), the cap bit 9 times, and the full-game RTP was 91.55% (+/-0.89% one sigma) against the uncapped model's 92.13%. At $0.50 bet the cap is 1600x and never applies in practice.
 
 ## 8. Volatility
 
-Full-game volatility index (standard deviation of a play's return in bets) is about 4.9, with a 28.6% hit frequency - roughly 1 in 3.5 plays, a little hotter than the IGT reference's quoted 1 in 4.01, because the 3-4-3 expanding Wilds that the lower paytable needs also produce more small wins. Base line wins carry about 78% of total RTP, the feature about 15%, and the fixed trigger prize the remaining 7%: frequent small wins, small top prize - the low-volatility shape the Montana cap pushes towards.
+Full-game volatility index (standard deviation of a play's return in bets) is about 5.6, with a 23.8% hit frequency - 1 in 4.2 plays, matching the IGT reference's quoted 1 in 4.01 (v0.4.0 ran hotter, 1 in 3.5, before low-symbol stops were moved to high symbols). Base line wins carry about 77% of total RTP, the feature about 16%, and the fixed trigger prize the remaining 7%: frequent small wins, small top prize - the low-volatility shape the Montana cap pushes towards.

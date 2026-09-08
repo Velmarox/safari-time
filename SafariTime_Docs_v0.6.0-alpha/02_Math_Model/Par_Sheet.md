@@ -6,11 +6,11 @@ Generated 2026-09-08 by `python -m engine.parsheet --features 1000000`. Every fi
 
 | Metric | Value |
 | --- | ---: |
-| **Total RTP** | **92.3119%** |
-| Base game line RTP (exact) | 72.3536% |
+| **Total RTP** | **92.1264%** |
+| Base game line RTP (exact) | 71.3535% |
 | Scatter RTP (exact) | 6.4964% |
-| Free Games RTP (Monte Carlo) | 13.4618% |
-| Free Games share of RTP | 14.6% |
+| Free Games RTP (Monte Carlo) | 14.2765% |
+| Free Games share of RTP | 15.5% |
 | Bonus trigger | 1 in 157.7 spins |
 | Lines | 10 fixed |
 | Pay direction | left (anchored on reel 1) |
@@ -57,9 +57,9 @@ Exactly one Africa can be visible per reel; the count is Poisson-binomial over f
 
 | Free games | Mean | Std dev | Max seen | Avg reels locked | Zero-win features |
 | --: | --: | --: | --: | --: | --: |
-| 10 | 19.73x | 41.85x | 867x | 0.99 | 6.7% |
-| 15 | 50.07x | 88.81x | 1134x | 1.34 | 1.7% |
-| 20 | 98.33x | 149.18x | 1338x | 1.62 | 0.4% |
+| 10 | 20.90x | 46.06x | 839x | 0.99 | 8.6% |
+| 15 | 53.52x | 97.61x | 1208x | 1.34 | 2.4% |
+| 20 | 106.18x | 164.45x | 1545x | 1.62 | 0.7% |
 
 ## Base game contribution by combination (exact)
 
@@ -67,16 +67,16 @@ Fraction of total bet returned by each winning combination, summed over all 10 l
 
 | Symbol | 3 | 4 | 5 | Total |
 | --- | --: | --: | --: | --: |
-| Lions | 1.4685% | 0.7115% | 0.0454% | 2.2254% |
-| Elephants | 1.8421% | 1.4544% | 0.1200% | 3.4165% |
-| Rhinos | 3.9486% | 2.7501% | 0.5266% | 7.2253% |
-| Giraffes | 5.0575% | 3.6821% | 0.8538% | 9.5934% |
-| Zebras | 5.2800% | 3.9600% | 0.8800% | 10.1200% |
-| A | 5.5950% | 2.6526% | 1.6193% | 9.8669% |
-| K | 6.9524% | 3.3728% | 2.4091% | 12.7343% |
-| Q | 4.4550% | 2.4354% | 2.6730% | 9.5634% |
-| J | 3.7752% | 1.7037% | 2.1296% | 7.6085% |
-| **All** | | | | **72.3536%** |
+| Lions | 5.0568% | 3.0952% | 0.6174% | 8.7694% |
+| Elephants | 2.9750% | 2.5555% | 0.3587% | 5.8892% |
+| Rhinos | 5.3136% | 4.2924% | 1.1197% | 10.7257% |
+| Giraffes | 4.2509% | 3.2193% | 0.7465% | 8.2166% |
+| Zebras | 4.7482% | 3.2225% | 0.7966% | 8.7673% |
+| A | 4.6362% | 1.9973% | 1.2193% | 7.8528% |
+| K | 6.3945% | 3.0333% | 2.1666% | 11.5944% |
+| Q | 3.0120% | 1.5657% | 1.3815% | 5.9592% |
+| J | 2.0267% | 0.8558% | 0.6965% | 3.5790% |
+| **All** | | | | **71.3535%** |
 
 ## Symbol counts per 100-stop strip
 
@@ -84,31 +84,31 @@ Fraction of total bet returned by each winning combination, summed over all 10 l
 
 | ID | Symbol | R1 | R2 | R3 | R4 | R5 |
 | --: | --- | --: | --: | --: | --: | --: |
-| 1 | J | 20 | 13 | 12 | 13 | 20 |
-| 2 | Q | 18 | 17 | 16 | 17 | 18 |
-| 3 | K | 16 | 15 | 15 | 15 | 16 |
+| 1 | J | 14 | 11 | 10 | 11 | 14 |
+| 2 | Q | 15 | 15 | 14 | 15 | 15 |
+| 3 | K | 16 | 14 | 15 | 14 | 16 |
 | 4 | A | 14 | 13 | 13 | 13 | 14 |
-| 6 | Zebras | 10 | 11 | 11 | 11 | 10 |
+| 6 | Zebras | 11 | 11 | 11 | 11 | 11 |
 | 5 | Giraffes | 8 | 9 | 10 | 9 | 8 |
-| 7 | Rhinos | 6 | 8 | 8 | 8 | 6 |
-| 8 | Elephants | 3 | 5 | 5 | 5 | 3 |
-| 9 | Lions | 2 | 3 | 3 | 3 | 2 |
-| 10 | Wild | 0 | 3 | 4 | 3 | 0 |
+| 7 | Rhinos | 8 | 9 | 9 | 9 | 8 |
+| 8 | Elephants | 5 | 7 | 7 | 7 | 5 |
+| 9 | Lions | 6 | 5 | 5 | 5 | 6 |
+| 10 | Wild | 0 | 3 | 3 | 3 | 0 |
 | 11 | Africa | 3 | 3 | 3 | 3 | 3 |
 
 ### Free Games (no Wild on reels 1 and 5)
 
 | ID | Symbol | R1 | R2 | R3 | R4 | R5 |
 | --: | --- | --: | --: | --: | --: | --: |
-| 1 | J | 18 | 15 | 14 | 15 | 18 |
-| 2 | Q | 18 | 17 | 16 | 17 | 18 |
-| 3 | K | 16 | 15 | 15 | 15 | 16 |
+| 1 | J | 16 | 15 | 14 | 15 | 16 |
+| 2 | Q | 17 | 15 | 15 | 15 | 17 |
+| 3 | K | 16 | 14 | 13 | 14 | 16 |
 | 4 | A | 14 | 13 | 13 | 13 | 14 |
 | 6 | Zebras | 10 | 11 | 11 | 11 | 10 |
 | 5 | Giraffes | 8 | 9 | 10 | 9 | 8 |
-| 7 | Rhinos | 6 | 8 | 8 | 8 | 6 |
-| 8 | Elephants | 4 | 5 | 5 | 5 | 4 |
-| 9 | Lions | 3 | 3 | 3 | 3 | 3 |
+| 7 | Rhinos | 7 | 9 | 9 | 9 | 7 |
+| 8 | Elephants | 5 | 6 | 6 | 6 | 5 |
+| 9 | Lions | 4 | 4 | 4 | 4 | 4 |
 | 10 | Wild | 0 | 1 | 2 | 1 | 0 |
 | 11 | Africa | 3 | 3 | 3 | 3 | 3 |
 
@@ -133,208 +133,208 @@ Rows: 0 = top, 1 = middle, 2 = bottom. Each entry is the row used on reels 1-5.
 
 | Stop | R1 | R2 | R3 | R4 | R5 |
 | ---: | :-: | :-: | :-: | :-: | :-: |
-| 0 | J | Q | Q | Q | J |
-| 1 | Q | K | K | K | Q |
-| 2 | K | J | A | J | K |
-| 3 | A | A | J | A | A |
-| 4 | Ze | Ze | Ze | Ze | Ze |
+| 0 | K | Q | K | Q | K |
+| 1 | Q | K | Q | K | Q |
+| 2 | J | A | A | A | J |
+| 3 | A | J | Ze | J | A |
+| 4 | Ze | Ze | J | Ze | Ze |
 | 5 | Gi | Gi | Gi | Gi | Gi |
 | 6 | Rh | Rh | Rh | Rh | Rh |
-| 7 | J | El | El | El | J |
-| 8 | Q | Q | Q | Q | Q |
-| 9 | K | K | K | K | K |
-| 10 | A | J | **W** | J | A |
+| 7 | Li | El | El | El | Li |
+| 8 | El | Li | Li | Li | El |
+| 9 | K | Q | K | Q | K |
+| 10 | Q | K | Q | K | Q |
 | 11 | J | A | A | A | J |
-| 12 | El | Ze | J | Ze | El |
-| 13 | Q | Li | Ze | Li | Q |
-| 14 | Ze | Q | Gi | Q | Ze |
-| 15 | K | **W** | Q | **W** | K |
-| 16 | **AF** | K | K | K | **AF** |
-| 17 | J | Gi | Li | Gi | J |
-| 18 | A | **AF** | **AF** | **AF** | A |
-| 19 | Q | J | A | J | Q |
-| 20 | Gi | A | Rh | A | Gi |
-| 21 | K | Rh | J | Rh | K |
-| 22 | J | Q | Q | Q | J |
-| 23 | Li | Ze | Ze | Ze | Li |
-| 24 | Q | K | K | K | Q |
-| 25 | A | Q | Gi | Q | A |
-| 26 | Ze | J | A | J | Ze |
-| 27 | Rh | A | Q | A | Rh |
-| 28 | J | Gi | J | Gi | J |
-| 29 | K | K | K | K | K |
-| 30 | Q | El | El | El | Q |
-| 31 | Gi | Rh | Rh | Rh | Gi |
-| 32 | A | Ze | Ze | Ze | A |
-| 33 | J | Q | Q | Q | J |
-| 34 | K | J | A | J | K |
-| 35 | Ze | A | Gi | A | Ze |
-| 36 | Q | K | K | K | Q |
-| 37 | J | Q | J | Q | J |
-| 38 | A | Gi | **W** | Gi | A |
-| 39 | K | Ze | Q | Ze | K |
-| 40 | Rh | J | Ze | J | Rh |
-| 41 | Q | A | A | A | Q |
-| 42 | J | K | K | K | J |
-| 43 | Gi | Rh | Rh | Rh | Gi |
-| 44 | Ze | **W** | Gi | **W** | Ze |
-| 45 | A | Li | J | Li | A |
-| 46 | K | Q | Q | Q | K |
-| 47 | Q | **AF** | Li | **AF** | Q |
-| 48 | J | El | **AF** | El | J |
-| 49 | El | J | K | J | El |
-| 50 | **AF** | Q | A | Q | **AF** |
-| 51 | J | K | Ze | K | J |
-| 52 | Q | A | El | A | Q |
-| 53 | K | Ze | Q | Ze | K |
-| 54 | A | Gi | J | Gi | A |
-| 55 | Ze | Q | Gi | Q | Ze |
-| 56 | Gi | Rh | Rh | Rh | Gi |
-| 57 | J | K | K | K | J |
-| 58 | Q | J | A | J | Q |
-| 59 | K | A | Q | A | K |
-| 60 | Rh | Ze | Ze | Ze | Rh |
-| 61 | A | Gi | **W** | Gi | A |
-| 62 | J | Q | J | Q | J |
-| 63 | Q | K | K | K | Q |
-| 64 | Ze | J | Gi | J | Ze |
-| 65 | K | A | A | A | K |
-| 66 | J | Q | Q | Q | J |
-| 67 | A | Ze | Ze | Ze | A |
-| 68 | Gi | Rh | Rh | Rh | Gi |
-| 69 | Q | K | K | K | Q |
-| 70 | Li | El | El | El | Li |
-| 71 | K | Gi | J | Gi | K |
-| 72 | J | J | Q | J | J |
-| 73 | Rh | A | A | A | Rh |
-| 74 | Q | Q | Gi | Q | Q |
-| 75 | A | K | K | K | A |
-| 76 | Ze | Ze | Ze | Ze | Ze |
-| 77 | J | Li | Q | Li | J |
-| 78 | K | Q | J | Q | K |
-| 79 | Q | J | A | J | Q |
-| 80 | Gi | A | Rh | A | Gi |
-| 81 | A | Rh | Li | Rh | A |
-| 82 | J | **W** | **AF** | **W** | J |
-| 83 | El | K | K | K | El |
-| 84 | K | Gi | Q | Gi | K |
-| 85 | Ze | Q | Gi | Q | Ze |
-| 86 | Q | **AF** | Ze | **AF** | Q |
-| 87 | **AF** | Ze | J | Ze | **AF** |
-| 88 | J | J | A | J | J |
-| 89 | A | A | **W** | A | A |
-| 90 | K | K | K | K | K |
-| 91 | Q | Q | Q | Q | Q |
-| 92 | J | El | El | El | J |
-| 93 | Rh | Rh | Rh | Rh | Rh |
-| 94 | Gi | Gi | Gi | Gi | Gi |
-| 95 | Ze | Ze | Ze | Ze | Ze |
-| 96 | A | J | J | J | A |
-| 97 | K | A | A | A | K |
-| 98 | Q | K | K | K | Q |
-| 99 | J | Q | Q | Q | J |
+| 12 | A | **W** | Ze | **W** | A |
+| 13 | Ze | Ze | **W** | Ze | Ze |
+| 14 | **AF** | J | J | J | **AF** |
+| 15 | K | **AF** | Gi | **AF** | K |
+| 16 | Q | Q | K | Q | Q |
+| 17 | J | Gi | Rh | Gi | J |
+| 18 | A | Rh | Q | Rh | A |
+| 19 | Gi | K | A | K | Gi |
+| 20 | Rh | A | **AF** | A | Rh |
+| 21 | K | El | El | El | K |
+| 22 | Ze | J | Ze | J | Ze |
+| 23 | Q | Ze | K | Ze | Q |
+| 24 | J | Q | J | Q | J |
+| 25 | A | K | Q | K | A |
+| 26 | Li | A | Gi | A | Li |
+| 27 | K | Gi | A | Gi | K |
+| 28 | El | Rh | Rh | Rh | El |
+| 29 | Q | Q | K | Q | Q |
+| 30 | Gi | Li | Li | Li | Gi |
+| 31 | Rh | J | Ze | J | Rh |
+| 32 | Ze | Ze | Q | Ze | Ze |
+| 33 | J | K | A | K | J |
+| 34 | A | A | J | A | A |
+| 35 | K | El | Gi | El | K |
+| 36 | Q | Q | El | Q | Q |
+| 37 | J | Gi | K | Gi | J |
+| 38 | A | Rh | Rh | Rh | A |
+| 39 | K | K | Q | K | K |
+| 40 | Ze | J | Ze | J | Ze |
+| 41 | Li | Ze | A | Ze | Li |
+| 42 | Q | A | K | A | Q |
+| 43 | Gi | **W** | **W** | **W** | Gi |
+| 44 | Rh | Q | Gi | Q | Rh |
+| 45 | J | K | Q | K | J |
+| 46 | A | **AF** | J | **AF** | A |
+| 47 | K | Li | **AF** | Li | K |
+| 48 | **AF** | El | Li | El | **AF** |
+| 49 | Q | J | K | J | Q |
+| 50 | Ze | Q | A | Q | Ze |
+| 51 | El | A | Ze | A | El |
+| 52 | K | Ze | Rh | Ze | K |
+| 53 | J | Gi | El | Gi | J |
+| 54 | A | Rh | Q | Rh | A |
+| 55 | Gi | K | J | K | Gi |
+| 56 | Rh | Q | Gi | Q | Rh |
+| 57 | Q | A | K | A | Q |
+| 58 | Li | J | A | J | Li |
+| 59 | K | Ze | Ze | Ze | K |
+| 60 | Ze | K | Q | K | Ze |
+| 61 | J | Gi | Rh | Gi | J |
+| 62 | A | Rh | K | Rh | A |
+| 63 | Q | Q | El | Q | Q |
+| 64 | K | El | J | El | K |
+| 65 | El | A | Gi | A | El |
+| 66 | J | K | A | K | J |
+| 67 | A | J | Q | J | A |
+| 68 | Ze | Ze | Ze | Ze | Ze |
+| 69 | Gi | Q | K | Q | Gi |
+| 70 | Rh | Li | Li | Li | Rh |
+| 71 | Q | Gi | Rh | Gi | Q |
+| 72 | K | Rh | A | Rh | K |
+| 73 | Li | A | J | A | Li |
+| 74 | J | K | Q | K | J |
+| 75 | A | Q | Gi | Q | A |
+| 76 | Q | J | K | J | Q |
+| 77 | Ze | Ze | Ze | Ze | Ze |
+| 78 | K | El | El | El | K |
+| 79 | Gi | **W** | **W** | **W** | Gi |
+| 80 | Rh | A | A | A | Rh |
+| 81 | J | K | Q | K | J |
+| 82 | A | **AF** | **AF** | **AF** | A |
+| 83 | Q | Q | K | Q | Q |
+| 84 | K | Gi | Rh | Gi | K |
+| 85 | **AF** | Rh | J | Rh | **AF** |
+| 86 | Ze | J | Gi | J | Ze |
+| 87 | El | Ze | Ze | Ze | El |
+| 88 | J | A | A | A | J |
+| 89 | A | K | Q | K | A |
+| 90 | Q | Q | K | Q | Q |
+| 91 | K | Li | Li | Li | K |
+| 92 | Li | El | El | El | Li |
+| 93 | Gi | Gi | Rh | Gi | Gi |
+| 94 | Rh | Rh | J | Rh | Rh |
+| 95 | Ze | J | Gi | J | Ze |
+| 96 | J | Ze | Ze | Ze | J |
+| 97 | A | A | A | A | A |
+| 98 | Q | K | Q | K | Q |
+| 99 | K | Q | K | Q | K |
 
 ## Free Games reel strips
 
 | Stop | R1 | R2 | R3 | R4 | R5 |
 | ---: | :-: | :-: | :-: | :-: | :-: |
-| 0 | J | Q | Q | Q | J |
-| 1 | Q | J | K | J | Q |
-| 2 | K | K | J | K | K |
+| 0 | Q | J | Q | J | Q |
+| 1 | J | Q | J | Q | J |
+| 2 | K | K | K | K | K |
 | 3 | A | A | A | A | A |
 | 4 | Ze | Ze | Ze | Ze | Ze |
 | 5 | Gi | Gi | Gi | Gi | Gi |
 | 6 | Rh | Rh | Rh | Rh | Rh |
-| 7 | J | El | El | El | J |
-| 8 | Q | Q | Q | Q | Q |
-| 9 | K | J | K | J | K |
-| 10 | A | K | J | K | A |
-| 11 | El | A | A | A | El |
-| 12 | Li | Ze | Ze | Ze | Li |
-| 13 | J | Li | Li | Li | J |
-| 14 | Q | Q | Gi | Q | Q |
-| 15 | Ze | **AF** | Q | **AF** | Ze |
-| 16 | K | J | K | J | K |
-| 17 | **AF** | K | **AF** | K | **AF** |
-| 18 | A | Gi | J | Gi | A |
-| 19 | J | A | A | A | J |
-| 20 | Q | Rh | Rh | Rh | Q |
-| 21 | Gi | Q | Q | Q | Gi |
-| 22 | K | Ze | Ze | Ze | K |
-| 23 | Rh | J | K | J | Rh |
-| 24 | J | K | J | K | J |
-| 25 | Q | Q | Gi | Q | Q |
-| 26 | A | A | **W** | A | A |
-| 27 | Ze | Gi | A | Gi | Ze |
-| 28 | K | El | Q | El | K |
-| 29 | Gi | J | K | J | Gi |
-| 30 | J | K | El | K | J |
-| 31 | Q | Rh | Rh | Rh | Q |
-| 32 | A | Ze | Ze | Ze | A |
-| 33 | K | Q | J | Q | K |
-| 34 | Ze | A | Q | A | Ze |
-| 35 | J | J | A | J | J |
-| 36 | Q | K | Gi | K | Q |
-| 37 | El | Q | K | Q | El |
-| 38 | A | Gi | J | Gi | A |
-| 39 | K | Ze | Q | Ze | K |
-| 40 | Rh | **W** | Ze | **W** | Rh |
-| 41 | J | A | A | A | J |
-| 42 | Q | J | K | J | Q |
-| 43 | Gi | K | Rh | K | Gi |
-| 44 | Ze | Q | Gi | Q | Ze |
-| 45 | A | Rh | J | Rh | A |
-| 46 | K | Li | Q | Li | K |
-| 47 | J | **AF** | Li | **AF** | J |
-| 48 | Q | El | **AF** | El | Q |
-| 49 | Li | J | K | J | Li |
-| 50 | **AF** | Q | A | Q | **AF** |
-| 51 | J | K | Ze | K | J |
-| 52 | Q | A | El | A | Q |
-| 53 | K | Ze | Q | Ze | K |
-| 54 | A | Gi | J | Gi | A |
-| 55 | Ze | Q | Gi | Q | Ze |
-| 56 | Gi | Rh | Rh | Rh | Gi |
-| 57 | Rh | J | K | J | Rh |
-| 58 | J | K | A | K | J |
-| 59 | Q | A | Q | A | Q |
-| 60 | K | Ze | Ze | Ze | K |
-| 61 | A | Gi | J | Gi | A |
-| 62 | El | Q | K | Q | El |
-| 63 | J | J | Gi | J | J |
-| 64 | Q | K | A | K | Q |
-| 65 | Ze | A | Q | A | Ze |
-| 66 | K | Q | J | Q | K |
-| 67 | A | Ze | Ze | Ze | A |
-| 68 | Gi | Rh | Rh | Rh | Gi |
-| 69 | J | J | K | J | J |
-| 70 | Q | K | El | K | Q |
-| 71 | K | El | Q | El | K |
-| 72 | Rh | Gi | A | Gi | Rh |
-| 73 | Ze | A | **W** | A | Ze |
-| 74 | J | Q | J | Q | J |
-| 75 | Q | J | Gi | J | Q |
-| 76 | A | K | K | K | A |
-| 77 | K | Ze | Ze | Ze | K |
-| 78 | Li | Q | Q | Q | Li |
-| 79 | J | A | A | A | J |
-| 80 | Q | Rh | Rh | Rh | Q |
-| 81 | Gi | Li | J | Li | Gi |
-| 82 | A | **AF** | Li | **AF** | A |
-| 83 | **AF** | J | K | J | **AF** |
-| 84 | K | K | Q | K | K |
-| 85 | Ze | Gi | Gi | Gi | Ze |
-| 86 | J | Q | **AF** | Q | J |
-| 87 | Q | Ze | Ze | Ze | Q |
-| 88 | El | A | A | A | El |
-| 89 | A | J | J | J | A |
-| 90 | K | K | K | K | K |
-| 91 | J | Q | Q | Q | J |
+| 7 | El | El | El | El | El |
+| 8 | Q | Li | Li | Li | Q |
+| 9 | J | J | Q | J | J |
+| 10 | K | Q | J | Q | K |
+| 11 | A | K | K | K | A |
+| 12 | Li | A | A | A | Li |
+| 13 | **AF** | Ze | Ze | Ze | **AF** |
+| 14 | Q | **AF** | Gi | **AF** | Q |
+| 15 | Ze | Gi | **AF** | Gi | Ze |
+| 16 | J | J | Q | J | J |
+| 17 | K | Q | Rh | Q | K |
+| 18 | A | Rh | J | Rh | A |
+| 19 | Gi | K | K | K | Gi |
+| 20 | Q | A | A | A | Q |
+| 21 | Rh | Ze | **W** | Ze | Rh |
+| 22 | J | J | Ze | J | J |
+| 23 | K | Q | Q | Q | K |
+| 24 | A | K | J | K | A |
+| 25 | Ze | El | Gi | El | Ze |
+| 26 | Q | A | El | A | Q |
+| 27 | J | Gi | K | Gi | J |
+| 28 | K | Rh | A | Rh | K |
+| 29 | El | J | Rh | J | El |
+| 30 | Gi | Q | Q | Q | Gi |
+| 31 | A | Ze | Ze | Ze | A |
+| 32 | Q | K | J | K | Q |
+| 33 | J | A | K | A | J |
+| 34 | K | Li | A | Li | K |
+| 35 | Ze | J | Gi | J | Ze |
+| 36 | Rh | Q | Q | Q | Rh |
+| 37 | Li | Gi | Li | Gi | Li |
+| 38 | Q | Rh | Rh | Rh | Q |
+| 39 | A | K | J | K | A |
+| 40 | J | Ze | Ze | Ze | J |
+| 41 | K | El | El | El | K |
+| 42 | Gi | A | K | A | Gi |
+| 43 | Q | J | A | J | Q |
+| 44 | Ze | **W** | Q | **W** | Ze |
+| 45 | A | Q | Gi | Q | A |
+| 46 | J | K | J | K | J |
+| 47 | K | **AF** | **AF** | **AF** | K |
+| 48 | **AF** | Gi | Rh | Gi | **AF** |
+| 49 | Q | J | Q | J | Q |
+| 50 | Rh | Q | K | Q | Rh |
+| 51 | El | A | A | A | El |
+| 52 | J | Ze | Ze | Ze | J |
+| 53 | K | Rh | J | Rh | K |
+| 54 | A | K | Gi | K | A |
+| 55 | Ze | J | Q | J | Ze |
+| 56 | Q | Q | El | Q | Q |
+| 57 | Gi | A | K | A | Gi |
+| 58 | J | El | A | El | J |
+| 59 | K | Ze | Ze | Ze | K |
+| 60 | A | K | J | K | A |
+| 61 | Q | Gi | Rh | Gi | Q |
+| 62 | Li | Rh | Li | Rh | Li |
+| 63 | Rh | J | Q | J | Rh |
+| 64 | Ze | Q | Gi | Q | Ze |
+| 65 | J | Li | K | Li | J |
+| 66 | K | A | A | A | K |
+| 67 | Q | K | J | K | Q |
+| 68 | A | Ze | Ze | Ze | A |
+| 69 | Gi | J | Q | J | Gi |
+| 70 | El | Q | **W** | Q | El |
+| 71 | J | Gi | Rh | Gi | J |
+| 72 | K | Rh | K | Rh | K |
+| 73 | Q | A | A | A | Q |
+| 74 | A | K | J | K | A |
+| 75 | Ze | El | Gi | El | Ze |
+| 76 | Rh | J | El | J | Rh |
+| 77 | J | Q | Q | Q | J |
+| 78 | K | Ze | Ze | Ze | K |
+| 79 | Q | A | K | A | Q |
+| 80 | Gi | **AF** | A | **AF** | Gi |
+| 81 | A | K | J | K | A |
+| 82 | **AF** | Gi | **AF** | Gi | **AF** |
+| 83 | J | J | Q | J | J |
+| 84 | K | Q | Rh | Q | K |
+| 85 | Q | Rh | Gi | Rh | Q |
+| 86 | Ze | Ze | Ze | Ze | Ze |
+| 87 | Li | Li | Li | Li | Li |
+| 88 | A | A | K | A | A |
+| 89 | El | K | A | K | El |
+| 90 | J | J | J | J | J |
+| 91 | K | Q | Q | Q | K |
 | 92 | Q | El | El | El | Q |
-| 93 | Rh | Rh | Rh | Rh | Rh |
-| 94 | Gi | Gi | Gi | Gi | Gi |
+| 93 | Rh | Gi | Rh | Gi | Rh |
+| 94 | Gi | Rh | Gi | Rh | Gi |
 | 95 | Ze | Ze | Ze | Ze | Ze |
-| 96 | A | A | A | A | A |
-| 97 | K | J | J | J | K |
-| 98 | J | K | K | K | J |
+| 96 | A | A | K | A | A |
+| 97 | J | K | A | K | J |
+| 98 | K | J | J | J | K |
 | 99 | Q | Q | Q | Q | Q |
