@@ -60,11 +60,12 @@ FEATURE_WILD_REELS = (1, 2, 3)  # middle three reels only, during Free Games
 # ---------------------------------------------------------------------------
 # 4. PAY DIRECTION
 # ---------------------------------------------------------------------------
-# The written brief says chains read RIGHT TO LEFT (anchored on reel 5).
-# "left" = conventional left-to-right. "both" = pay each line whichever way
-# gives the larger award. Changing this requires re-running engine/tune.py.
+# Chains read LEFT TO RIGHT from reel 1 (conventional; matches the reference
+# screenshots). "right" anchors on reel 5; "both" pays each line whichever way
+# gives the larger award. The strips are mirror-symmetric, so "left" and
+# "right" solve to the same RTP; "both" does not and needs re-tuning.
 
-PAY_DIRECTION = "right"         # "right" | "left" | "both"
+PAY_DIRECTION = "left"          # "right" | "left" | "both"
 MIN_CHAIN = 3
 
 # ---------------------------------------------------------------------------
@@ -140,8 +141,8 @@ MAX_FREE_SPINS = 200            # safety cap should RETRIGGER be enabled
 # 8. VIRTUAL REEL STRIPS
 # ---------------------------------------------------------------------------
 # Symbol counts per 100-stop strip; each column must sum to STOPS.
-# Reel 5 anchors the chain under right-to-left play, so it is weighted
-# alongside reel 1 as one of the two most restrictive strips.
+# Reels 1 and 5 are the two most restrictive strips and mirror each other, so
+# the maths is identical whichever end the chain is anchored on.
 
 BASE_COUNTS = {
     #            R1  R2  R3  R4  R5

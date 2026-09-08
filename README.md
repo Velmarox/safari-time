@@ -47,7 +47,7 @@ with Firebase Hosting: `firebase deploy`.
 
 ## Rules in one breath
 
-10 lines always on. Wins are 3+ adjacent from **reel 5 leftwards**, highest win
+10 lines always on. Wins are 3+ adjacent from **reel 1 rightwards**, highest win
 per line. A WILD anywhere on a reel expands to fill it before pays. 3/4/5
 AFRICA anywhere award 10/15/20 Free Games; in Free Games WILDs land only on
 reels 2-4, expand, and stay for the rest of the feature. $800 cap per play.

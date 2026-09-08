@@ -1,0 +1,65 @@
+# Safari Time - Mathematical Model
+
+How the numbers in `Par_Sheet.md` are produced, and why each part is computed the way it is. Code references are to `engine/`.
+
+## 1. Virtual reels (`config.py`)
+
+Each reel is an array of 100 integer symbol IDs. Symbol counts per reel are set in `BASE_COUNTS`; the strip order is generated deterministically by `build_strip`, which places at each position whichever symbol is furthest behind its fair share. This spreads rare symbols evenly, and with three AFRICA per 100 stops (roughly 33 apart) it guarantees at most one AFRICA in any 3-symbol window. That guarantee is asserted at import.
+
+Total combinations: 100^5 = 10,000,000,000.
+
+Per-reel window probabilities (base game):
+
+- P(WILD visible on a reel) = 3 stops / 100 = 0.03
+- P(AFRICA visible on a reel) = 9 / 100 = 0.09
+
+## 2. Scatter combinatorics (`exact.scatter_distribution`)
+
+With at most one AFRICA per reel the on-screen count is a Poisson-binomial over five independent reels with p = 0.09 each:
+
+    P(3+) = 10 p^3 (1-p)^2 + 5 p^4 (1-p) + p^5 = 0.006341  ->  1 in 157.7
+
+The brief asked for roughly 1 in 150. The brief's example weighting (2 AFRICA per reel, p = 0.06) would give about 1 in 500; three per reel is what lands it near 150.
+
+## 3. Base game - exact, not simulated (`exact.base_line_math`)
+
+Two facts make the base game solvable in closed form despite expanding wilds:
+
+**Wild expansion is a column property.** For any reel and stop, either the window contains a WILD (and every row of that column reads WILD) or it does not (and each row reads its own symbol). So for each (reel, row) we tabulate the exact distribution of the *effective* symbol over all 100 stops.
+
+**A payline touches one row per reel.** Reels stop independently, so the joint distribution of the five effective symbols along a line is the product of five (reel, row) marginals.
+
+The chain evaluation is then a dynamic program over the five positions in scan order. The state is the set of symbols that could still extend the chain, which is always either *every paying symbol* (nothing but WILDs seen so far) or *one symbol*. When a WILD run of length n is broken by symbol X, every other symbol dies with a chain of exactly n, so the fallback award `BEST_OTHER[X][n]` is folded in at that point. The final award is the max of the surviving chain and the best fallback, which is exactly what the game engine's "try every symbol, take the best" evaluator computes - `tests/test_engine.py` checks the two agree on 20,000 random grids.
+
+Output: expected award per line in line bets, broken down by (symbol, chain). Summed over 10 lines and divided by 10 (total bet = 10 line bets) it is the base line RTP.
+
+## 4. Free Games - Monte Carlo (`simulate.feature_ev`)
+
+Sticky wilds make the feature stateful: the distribution of spin k depends on which reels locked in spins 1..k-1. No closed form is attempted. The simulator plays the feature out with the feature strips:
+
+1. Spin five stops.
+2. Any WILD on reels 2-4 adds that reel to the locked set.
+3. Overwrite locked reels with WILD, evaluate the 10 lines, accumulate.
+4. Repeat for 10, 15 or 20 spins.
+
+Run 1,000,000 times per spin count and averaged. Standard error is reported alongside the mean.
+
+## 5. Total RTP
+
+    RTP = base_line_RTP + scatter_RTP + sum over n>=3 of P(n AFRICA) x E[feature(n)] / total_bet
+
+Scatter RTP is zero because AFRICA pays nothing directly. The result is checked by `simulate.full_game`, which plays complete rounds through `game.py` (the production path, with the $800 cap) and reports RTP, hit frequency, volatility index and how often the cap bites.
+
+## 6. Tuning (`tune.py`)
+
+Every award is a multiple of the line bet and scatters pay nothing, so RTP is linear in the paytable. The tuner computes `scale = target / current`, scales every entry, rounds to pay-screen-friendly figures and re-solves. Rounding moves the result by up to about a point; hand-adjust the biggest contributors (J/Q x3, K/A x4, Giraffe x3 carry the most weight) to land it.
+
+To move RTP without touching the paytable: add or remove WILD stops (strong lever on both base and feature), move AFRICA count (changes trigger rate and feature share), or shift low-symbol counts on reels 1 and 2 (the anchor end under left-to-right pay).
+
+## 7. The $800 cap
+
+Applied once per play to base + feature. At $2.00 bet it is 400x; a 20-spin feature with two or three locked reels can exceed it. Measured over 400,000 plays at $2.00: 18 capped plays and a full-game RTP of 91.42% (+/-0.88%) against the uncapped model's 92.39%. At $0.50 bet the cap is 1600x and effectively never applies.
+
+## 8. Volatility
+
+Full-game volatility index (standard deviation of a play's return in bets) is about 5.6, with a 24% hit frequency. The feature carries roughly 18% of total RTP, so most of the return is in frequent base-game wins - the low-volatility shape the Montana cap pushes towards.
