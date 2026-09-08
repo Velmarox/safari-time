@@ -151,44 +151,49 @@ MAX_FREE_SPINS = 200            # safety cap should RETRIGGER be enabled
 # ---------------------------------------------------------------------------
 # Symbol counts per 100-stop strip; each column must sum to STOPS.
 #
-# With the paytable fixed, these weights ARE the RTP dial. The expanding Wild
-# is by far the strongest lever and compounds across adjacent middle reels:
-# with the reference paytable, 3 Wilds per middle reel gives ~64% base line
-# RTP, 4 gives ~88%, 5 gives ~117%. The 3-4-3 layout below lands the base at
-# ~72%, which with the 6.5% trigger prize and a ~13.5% feature makes ~92%.
-# Reels 1 and 5 mirror each other and carry the fewest high symbols, since
-# every chain is anchored on reel 1.
+# With the paytable fixed, these weights ARE the RTP dial, and there are two
+# of them because RTP and hit frequency pull in different directions:
+#   - expanding Wilds add return AND hits (3 per middle reel ~64% base, 4 ~88%,
+#     5 ~117% - adjacent expanded reels compound);
+#   - moving stops from low symbols to Lion/Elephant/Rhino adds return while
+#     REMOVING hits, because a rare symbol chains less often than a common one.
+# The reference game's overall odds of winning are 1 in 4.01. Wilds 3-3-3 with
+# the highs pushed up lands ~1 in 4.2 at ~72% base; the trigger prize (6.5%)
+# and the feature (~14%) make the ~92% total. Reels 1 and 5 mirror each other
+# and every chain is anchored on reel 1, so their high-symbol counts are the
+# fine adjustment (one Lion stop there is worth about half a point).
 
 BASE_COUNTS = {
     #            R1  R2  R3  R4  R5
-    J:        [ 20, 13, 12, 13, 20],
-    Q:        [ 18, 17, 16, 17, 18],
-    K:        [ 16, 15, 15, 15, 16],
+    J:        [ 14, 11, 10, 11, 14],
+    Q:        [ 15, 15, 14, 15, 15],
+    K:        [ 16, 14, 15, 14, 16],
     A:        [ 14, 13, 13, 13, 14],
-    ZEBRA:    [ 10, 11, 11, 11, 10],
+    ZEBRA:    [ 11, 11, 11, 11, 11],
     GIRAFFE:  [  8,  9, 10,  9,  8],
-    RHINO:    [  6,  8,  8,  8,  6],
-    ELEPHANT: [  3,  5,  5,  5,  3],
-    LION:     [  2,  3,  3,  3,  2],
-    WILD:     [  0,  3,  4,  3,  0],
+    RHINO:    [  8,  9,  9,  9,  8],
+    ELEPHANT: [  5,  7,  7,  7,  5],
+    LION:     [  6,  5,  5,  5,  6],
+    WILD:     [  0,  3,  3,  3,  0],
     AFRICA:   [  3,  3,  3,  3,  3],
 }
 
-# Free Games strips carry fewer Wilds (1-2-1) than the base game: a feature
-# Wild locks its reel for every remaining spin, so base-game density would
-# make three locked reels routine and blow the feature past the cap. The
+# Free Games strips: fewer Wilds (1-2-1) than the base game, because a feature
+# Wild locks its reel for every remaining spin and base-game density would make
+# three locked reels routine; slightly more high symbols instead, which lifts
+# the feature's return without touching the base game's hit rate. The
 # reference game likewise notes its bonus reels have a different composition.
 FEATURE_COUNTS = {
     #            R1  R2  R3  R4  R5
-    J:        [ 18, 15, 14, 15, 18],
-    Q:        [ 18, 17, 16, 17, 18],
-    K:        [ 16, 15, 15, 15, 16],
+    J:        [ 16, 15, 14, 15, 16],
+    Q:        [ 17, 15, 15, 15, 17],
+    K:        [ 16, 14, 13, 14, 16],
     A:        [ 14, 13, 13, 13, 14],
     ZEBRA:    [ 10, 11, 11, 11, 10],
     GIRAFFE:  [  8,  9, 10,  9,  8],
-    RHINO:    [  6,  8,  8,  8,  6],
-    ELEPHANT: [  4,  5,  5,  5,  4],
-    LION:     [  3,  3,  3,  3,  3],
+    RHINO:    [  7,  9,  9,  9,  7],
+    ELEPHANT: [  5,  6,  6,  6,  5],
+    LION:     [  4,  4,  4,  4,  4],
     WILD:     [  0,  1,  2,  1,  0],
     AFRICA:   [  3,  3,  3,  3,  3],
 }

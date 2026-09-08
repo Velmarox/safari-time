@@ -1,0 +1,101 @@
+SAFARITIME - CHANGELOG
+Versioning scheme: v#.#.#-[stage] (semver)
+Patch = fixes | Minor = new content (patch resets) | Major 0 until launch (v1.0.0)
+Stages: -alpha -> -beta at feature-complete -> -rc1 when launch-ready -> v1.0.0 gold
+A bump renames the build root folder and adds an entry here; working files keep their names.
+Archived (outgoing-version) copies live in _version_archive/, never in the build folder.
+
+v0.6.0-alpha (2026-09-08)
+- The casino ledger. Every settled play reports bet, payout, whether the feature
+  triggered and the bet level to the shared Firestore document ledgers/safari on the
+  elos-hoard project, through web/casino-ledger.js (an anonymous session, nothing about
+  the player). One-way: nothing reads it back into play. The casino console at
+  merwinwebdesignz.com/work/games/casinoadmin compares the observed return with the
+  92.31% the par sheet solves to, using the volatility index in Math_Spec section 8 for
+  the spread. If the SDK or the network is missing the report is a no-op.
+- The game is served from the portfolio (merwinwebdesignz.com/work/games/safari-time/play);
+  safaritime.web.app shows a moved notice. Do not firebase deploy from here.
+
+v0.5.0-alpha (2026-09-08)
+- Maths: hit frequency brought to ~1 in 4.2 (was 1 in 3.5) to match the reference game's 1 in 4.01.
+  Base Wilds 3-3-3 (were 3-4-3) with low-symbol stops moved to Lion/Elephant/Rhino - rarer
+  symbols chain less often, so that adds return while removing hits; the feature strips gain a
+  few high symbols to make up the return. Total ~92% (par sheet regenerated).
+- Sound: separate mute buttons for the music and the slot effects (both remembered).
+- Layout: the machine scales with the screen - bounded by height on desktop, by width on phones -
+  and every font follows the cell size; 44px touch targets; phone-landscape fallback.
+- Flow: after a winning spin the win sound plays and the first line shows for 0.3 s, then PLAY is
+  live again while the line cycle carries on behind the player; the next spin cancels it.
+  (archived to _version_archive/SafariTime_Docs_v0.4.0-alpha/01_Design_Core/Game_Overview.md,
+   .../02_Math_Model/Math_Spec.md, .../02_Math_Model/Par_Sheet.md, .../CHANGELOG.txt)
+
+v0.4.0-alpha (2026-09-08)
+- Paytable replaced with the reference game's (IGT "The Wild Life") halved for Montana's $0.20
+  line bet: Lion 50/200/625, Elephant 30/150/400, Rhino 25/100/300, Giraffe 20/75/200,
+  Zebra 15/50/100, A/K 10/20/75, Q/J 5/10/50 (x line bet). Giraffe now out-pays Zebra.
+- The paytable is now FIXED and RTP is solved by re-weighting the reels: base game Wilds 3-4-3
+  on the middle reels (were 1-1-1), Free Games get their own leaner strips (Wilds 1-2-1).
+  Total RTP 92.31% (par sheet regenerated). Math_Spec.md and Game_Overview.md updated.
+  (archived to _version_archive/SafariTime_Docs_v0.3.3-alpha/01_Design_Core/Game_Overview.md,
+   .../02_Math_Model/Math_Spec.md, .../02_Math_Model/Par_Sheet.md, .../CHANGELOG.txt)
+
+v0.3.3-alpha (2026-09-08)
+- Fix: the continuous roll animation scrolled the symbols upward; it now runs downward like a
+  physical reel (the landing glide already did). (archived to _version_archive/SafariTime_Docs_v0.3.2-alpha/CHANGELOG.txt)
+- Music: the background loop is now self-healing - it restarts if its source ever ends, the
+  audio context is resumed on the next tap or when the tab becomes visible again if the browser
+  suspended it, and the MP3 encoder's leading/trailing silence is trimmed from the loop points so
+  the loop is gapless. Track only changes on entering and leaving Free Games.
+
+v0.3.2-alpha (2026-09-08)
+- Presentation: reels now land half a second apart (was one second); STOP snaps every reel still
+  rolling onto its result instantly instead of landing them in sequence. Game_Overview.md updated.
+  (archived to _version_archive/SafariTime_Docs_v0.3.1-alpha/01_Design_Core/Game_Overview.md, .../CHANGELOG.txt)
+
+v0.3.1-alpha (2026-09-08)
+- Presentation: on PLAY all reels roll continuously; reel 1 lands after 0.8 s and each next reel
+  lands exactly one second after the previous one (was roll-land-pause-roll at ~0.9 s). STOP still
+  lands the rest immediately. Game_Overview.md updated.
+  (archived to _version_archive/SafariTime_Docs_v0.3.0-alpha/01_Design_Core/Game_Overview.md, .../CHANGELOG.txt)
+
+v0.3.0-alpha (2026-09-08)
+- Rules (from the IGT "The Wild Life" reference): triggering Free Games also pays a bonus prize
+  equal to the total bet times the number of free games awarded (10x / 15x / 20x total bet).
+  Scatter RTP is now 6.5 points; line paytable scaled down ~x0.93 to hold the total near 92%.
+- Strips: a Wild is never laid within two stops of an Africa, so the two can never show on the
+  same reel (a Wild does not substitute for Africa). Enforced by assertion and a test.
+- Presentation: reels roll and land one at a time with a pause between landings; the PLAY button
+  becomes STOP while they roll and lands the rest immediately. Extra-long roll once two Africa
+  are showing. The Africa hit is a new brass sample that rises a whole step on each successive
+  Africa, and stays silent once the bonus can no longer be reached on the remaining reels.
+- Art: new Africa symbol (blue/silver medallion) replaces the gold one so it stands out.
+- 03_Assets_Audio/Africa_Symbol.wav replaced with the new sample.
+  (archived to _version_archive/SafariTime_Docs_v0.2.0-alpha/03_Assets_Audio/Africa_Symbol.wav,
+   .../01_Design_Core/Game_Overview.md, .../02_Math_Model/Math_Spec.md, .../02_Math_Model/Par_Sheet.md,
+   .../CHANGELOG.txt)
+
+v0.2.0-alpha (2026-09-08)
+- Maths: WILD removed from reels 1 and 5 in the base game (WILD_REELS = (1, 2, 3); it was already
+  absent there in Free Games). Base line RTP fell 75.4% -> 61.5%, so the paytable was rescaled
+  x1.17 (e.g. Lion x5 1250 -> 1500) to restore a ~92% total. Par_Sheet.md regenerated; Math_Spec.md
+  and Game_Overview.md updated. (archived to _version_archive/SafariTime_Docs_v0.1.1-alpha/02_Math_Model/
+  Math_Spec.md and Par_Sheet.md)
+- New 03_Assets_Audio/: 15 source WAVs supplied by the user (2 looping BGMs, 13 one-shot
+  effects), renamed to Snake_Case from their original spaced names.
+- Web build: WAVs encoded to MP3 by engine/encode_audio.js into web/assets/audio/; the game
+  now has music (base / free games loops), reel, win, animal, scatter and bonus sounds, and a
+  mute toggle. Game_Overview.md presentation section updated.
+  (archived to _version_archive/SafariTime_Docs_v0.1.1-alpha/CHANGELOG.txt)
+
+v0.1.1-alpha (2026-09-08)
+- Pay direction switched to left-to-right (PAY_DIRECTION = "left"); RTP unchanged by symmetry.
+  Updated Game_Overview.md and Math_Spec.md wording; regenerated Par_Sheet.md.
+  (archived to _version_archive/SafariTime_Docs_v0.1.0-alpha/01_Design_Core/Game_Overview.md,
+   .../02_Math_Model/Math_Spec.md, .../02_Math_Model/Par_Sheet.md, .../CHANGELOG.txt)
+- Symbol art sliced from the supplied sheet and medallion into web/assets/symbols/ (engine/slice_art.py).
+
+v0.1.0-alpha (2026-09-08)
+- Initial release.
+- 01_Design_Core/Game_Overview.md: rules, wagering, feature, presentation, open decisions.
+- 02_Math_Model/Math_Spec.md: how the exact solver, Monte Carlo and tuner work.
+- 02_Math_Model/Par_Sheet.md: generated par sheet (strips, paytable, contributions, RTP 92.39%).
