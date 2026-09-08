@@ -34,7 +34,7 @@ _version_archive/               frozen copies of superseded doc versions
 ```bash
 python -m engine.slice_art SHEET.jpg AFRICA.jpg
 npm install lamejs@1.2.1
-node engine/encode_audio.js SafariTime_Docs_v0.3.2-alpha/03_Assets_Audio web/assets/audio --lamejs node_modules/lamejs/lame.all.js
+node engine/encode_audio.js SafariTime_Docs_v0.3.3-alpha/03_Assets_Audio web/assets/audio --lamejs node_modules/lamejs/lame.all.js
 python -m engine.export
 ```
 

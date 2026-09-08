@@ -91,8 +91,9 @@
   .strip.blur { filter: blur(1.6px); }
   /* Continuous roll while a reel is spinning: the strip holds one block of
      cells twice, and the animation scrolls exactly one block, so it loops
-     seamlessly until the landing sequence takes over. */
-  @keyframes reelroll { from { transform: translateY(0); } to { transform: translateY(var(--roll)); } }
+     seamlessly until the landing sequence takes over. It runs from the
+     negative offset back to 0 so the symbols travel DOWN, like a real reel. */
+  @keyframes reelroll { from { transform: translateY(var(--roll)); } to { transform: translateY(0); } }
   .strip.rolling { animation: reelroll 400ms linear infinite; }
   .reel.locked::after {
     content: ""; position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
@@ -391,12 +392,36 @@
       }
       $("muteBtn").hidden = false;
       renderMute();
+      // Keep the music going: if the context gets suspended, try to resume
+      // when the page is visible again; a tap always works (see audioUnlock).
+      audio.ctx.onstatechange = () => { if (audio.unlocked && audio.ctx.state === "running") ensureBgm(); };
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden && audio.unlocked && audio.ctx.state !== "running") audio.ctx.resume().catch(() => {});
+      });
       if (DEBUG) window.ST.audio = audio;
     }
     function audioUnlock() {
-      if (!audio.ctx || audio.unlocked) return;
+      if (!audio.ctx) return;
+      if (audio.unlocked) {
+        // The browser can suspend the context later (tab switch, focus loss,
+        // iOS interruption); the next tap brings it back and the loop resumes.
+        if (audio.ctx.state !== "running") audio.ctx.resume().then(ensureBgm).catch(() => {});
+        return;
+      }
       audio.unlocked = true;
       audio.ctx.resume().then(() => bgm(audio.bgmName || "normal_game_bgm"));
+    }
+    function ensureBgm() {
+      if (audio.bgmName && !audio.bgm) bgm(audio.bgmName);
+    }
+    function loopBounds(buf) {
+      // Trim the encoder's leading/trailing silence so the loop point is tight.
+      const data = buf.getChannelData(0);
+      const thr = 0.004;
+      let a = 0, b = data.length - 1;
+      while (a < b && Math.abs(data[a]) < thr) a++;
+      while (b > a && Math.abs(data[b]) < thr) b--;
+      return [a / buf.sampleRate, (b + 1) / buf.sampleRate];
     }
     function sfx(name, vol = SFX_VOL, loop = false, rate = 1) {
       const buf = audio.ctx && audio.unlocked && audio.buffers[name];
@@ -424,12 +449,17 @@
       if (!buf) return;                           // starts when decoded / unlocked
       const src = audio.ctx.createBufferSource();
       src.buffer = buf; src.loop = true;
+      const [ls, le] = loopBounds(buf);
+      src.loopStart = ls; src.loopEnd = le;
       const g = audio.ctx.createGain();
       const t = audio.ctx.currentTime;
       g.gain.setValueAtTime(0, t);
       g.gain.linearRampToValueAtTime(BGM_VOL, t + 0.8);
       src.connect(g).connect(audio.master);
-      src.start();
+      src.start(0, ls);
+      // A looping source never ends on its own; if it somehow does, and it is
+      // still the current track, start it again.
+      src.onended = () => { if (audio.bgm && audio.bgm.src === src) { audio.bgm = null; ensureBgm(); } };
       audio.bgm = { src, g, name };
     }
     function renderMute() { $("muteBtn").textContent = audio.muted ? "🔇" : "🔊"; }
@@ -603,7 +633,7 @@
       const block = Array.from({ length: ROLL_BLOCK }, () => strip[cryptoStop()]);
       const el = reels[i].querySelector(".strip");
       el.style.transition = "none";
-      el.style.transform = "translateY(0)";
+      el.style.transform = `translateY(${-ROLL_BLOCK * step}px)`;   // where the loop starts
       el.style.setProperty("--roll", `${-ROLL_BLOCK * step}px`);
       el.replaceChildren(...[...block, ...block].map(makeCell));
       el.classList.add("blur", "rolling");
