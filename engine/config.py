@@ -55,7 +55,10 @@ REELS = 5
 ROWS = 3
 STOPS = 100                     # virtual stops per strip -> 100^5 combinations
 
-FEATURE_WILD_REELS = (1, 2, 3)  # middle three reels only, during Free Games
+# WILD lands only on the middle three reels - in the base game and in Free
+# Games alike. Reels 1 and 5 never show one.
+WILD_REELS = (1, 2, 3)
+FEATURE_WILD_REELS = WILD_REELS  # reels whose Wilds stick during Free Games
 
 # ---------------------------------------------------------------------------
 # 4. PAY DIRECTION
@@ -97,15 +100,15 @@ assert len(PAYLINES) == LINES
 
 PAYTABLE = {
     #            3    4     5
-    J:        (  9,  30,  100),
-    Q:        (  9,  30,  100),
-    K:        ( 15,  60,  150),
-    A:        ( 15,  60,  150),
-    GIRAFFE:  ( 25,  80,  250),
-    ZEBRA:    ( 25, 120,  350),
-    RHINO:    ( 35, 180,  500),
-    ELEPHANT: ( 70, 300,  800),
-    LION:     (100, 400, 1250),
+    J:        (  9,  35,  120),
+    Q:        (  9,  35,  120),
+    K:        ( 20,  70,  180),
+    A:        ( 20,  70,  180),
+    GIRAFFE:  ( 30,  90,  300),
+    ZEBRA:    ( 30, 140,  400),
+    RHINO:    ( 40, 200,  600),
+    ELEPHANT: ( 80, 350,  950),
+    LION:     (120, 450, 1500),
 }
 
 
@@ -146,7 +149,7 @@ MAX_FREE_SPINS = 200            # safety cap should RETRIGGER be enabled
 
 BASE_COUNTS = {
     #            R1  R2  R3  R4  R5
-    J:        [ 20, 18, 18, 18, 20],
+    J:        [ 21, 18, 18, 18, 21],
     Q:        [ 18, 17, 16, 17, 18],
     K:        [ 16, 15, 15, 15, 16],
     A:        [ 14, 13, 13, 13, 14],
@@ -155,16 +158,19 @@ BASE_COUNTS = {
     RHINO:    [  5,  7,  7,  7,  5],
     ELEPHANT: [  3,  4,  4,  4,  3],
     LION:     [  2,  2,  2,  2,  2],
-    WILD:     [  1,  1,  1,  1,  1],
+    WILD:     [  0,  1,  1,  1,  0],
     AFRICA:   [  3,  3,  3,  3,  3],
 }
 
-# Free Games strips: Wilds exist ONLY on the middle three reels, so reels 1
-# and 5 hand their Wild stop back to J.
+# Free Games use the same strips today. Kept separate so the feature can be
+# weighted differently later without touching the base game.
 FEATURE_COUNTS = {sym: list(row) for sym, row in BASE_COUNTS.items()}
-for _r in (0, 4):
-    FEATURE_COUNTS[WILD][_r] = 0
-    FEATURE_COUNTS[J][_r] += 1
+
+for _counts in (BASE_COUNTS, FEATURE_COUNTS):
+    for _r in range(REELS):
+        assert (_counts[WILD][_r] > 0) == (_r in WILD_REELS), (
+            f"Wild count on reel {_r + 1} contradicts WILD_REELS"
+        )
 
 
 def build_strip(counts_for_reel: dict, stops: int = STOPS) -> list:

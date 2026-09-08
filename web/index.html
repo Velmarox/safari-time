@@ -64,6 +64,14 @@
     background: rgba(0,0,0,.35); border: 1px solid var(--gold-dark);
   }
   .topbar .fg { color: #ffb14a; animation: pulse 1.2s ease-in-out infinite; }
+  .topbar .right { display: flex; gap: 6px; align-items: center; }
+  .topbar .mute {
+    padding: 3px 9px; border-radius: 999px; font-size: 15px; line-height: 1;
+    background: rgba(0,0,0,.35); border: 1px solid var(--gold-dark); color: var(--gold-light);
+    box-shadow: none;
+  }
+  .topbar .mute:active { transform: none; }
+  .topbar .mute[hidden] { display: none; }
   @keyframes pulse { 0%,100% { opacity: 1 } 50% { opacity: .55 } }
 
   .window {
@@ -228,7 +236,10 @@
   <div class="machine" id="machine">
     <div class="topbar">
       <span class="badge" id="modeBadge">10 LINES &middot; PAYS LEFT TO RIGHT</span>
-      <span class="badge" id="fsBadge" hidden></span>
+      <span class="right">
+        <span class="badge" id="fsBadge" hidden></span>
+        <button class="mute" id="muteBtn" hidden aria-label="Toggle sound" title="Sound on/off">🔊</button>
+      </span>
     </div>
 
     <div class="window" id="window">
@@ -346,6 +357,81 @@
         el.innerHTML = `<span class="glyph">${EMOJI[sym]}</span>`;
       }
       return el;
+    }
+
+    // ---------------------------------------------------------------- audio
+    // Web Audio: every clip is decoded once into a buffer, so effects overlap
+    // freely and the music loops gaplessly. Browsers keep the context
+    // suspended until a user gesture, so nothing sounds before the first tap.
+    const AUDIO = D.audio || {};                 // name -> path, from engine/export.py
+    const BGM_VOL = 0.32, SFX_VOL = 0.8;
+    const ANIMAL_SFX = {
+      [ID.LION]: "lion_roar", [ID.ELEPHANT]: "elephant_noise",
+      [ID.GIRAFFE]: "giraffe_noise", [ID.RHINO]: "rhinos_bellow",
+    };
+    const audio = { ctx: null, master: null, buffers: {}, bgm: null, bgmName: null, muted: false, unlocked: false };
+
+    function audioInit() {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx || !Object.keys(AUDIO).length) return;
+      try { audio.ctx = new Ctx(); } catch (e) { return; }
+      audio.master = audio.ctx.createGain();
+      audio.master.connect(audio.ctx.destination);
+      try { audio.muted = localStorage.getItem("st.muted") === "1"; } catch (e) {}
+      audio.master.gain.value = audio.muted ? 0 : 1;
+      for (const [name, src] of Object.entries(AUDIO)) {
+        fetch(src).then((r) => r.arrayBuffer()).then((b) => audio.ctx.decodeAudioData(b))
+          .then((buf) => { audio.buffers[name] = buf; if (audio.bgmName === name && !audio.bgm) bgm(name); })
+          .catch(() => {});
+      }
+      $("muteBtn").hidden = false;
+      renderMute();
+      if (DEBUG) window.ST.audio = audio;
+    }
+    function audioUnlock() {
+      if (!audio.ctx || audio.unlocked) return;
+      audio.unlocked = true;
+      audio.ctx.resume().then(() => bgm(audio.bgmName || "normal_game_bgm"));
+    }
+    function sfx(name, vol = SFX_VOL, loop = false) {
+      const buf = audio.ctx && audio.unlocked && audio.buffers[name];
+      if (!buf) return null;
+      const src = audio.ctx.createBufferSource();
+      src.buffer = buf; src.loop = loop;
+      const g = audio.ctx.createGain(); g.gain.value = vol;
+      src.connect(g).connect(audio.master);
+      src.start();
+      return { stop() { try { src.stop(); } catch (e) {} } };
+    }
+    function bgm(name) {
+      if (!audio.ctx) return;
+      audio.bgmName = name;
+      const buf = audio.unlocked && audio.buffers[name];
+      if (audio.bgm && audio.bgm.name === name) return;
+      if (audio.bgm) {                            // fade the old track out
+        const old = audio.bgm; audio.bgm = null;
+        const t = audio.ctx.currentTime;
+        old.g.gain.setValueAtTime(old.g.gain.value, t);
+        old.g.gain.linearRampToValueAtTime(0, t + 0.6);
+        setTimeout(() => { try { old.src.stop(); } catch (e) {} }, 700);
+      }
+      if (!buf) return;                           // starts when decoded / unlocked
+      const src = audio.ctx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const g = audio.ctx.createGain();
+      const t = audio.ctx.currentTime;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(BGM_VOL, t + 0.8);
+      src.connect(g).connect(audio.master);
+      src.start();
+      audio.bgm = { src, g, name };
+    }
+    function renderMute() { $("muteBtn").textContent = audio.muted ? "🔇" : "🔊"; }
+    function toggleMute() {
+      audio.muted = !audio.muted;
+      if (audio.master) audio.master.gain.value = audio.muted ? 0 : 1;
+      try { localStorage.setItem("st.muted", audio.muted ? "1" : "0"); } catch (e) {}
+      renderMute();
     }
 
     // ---------------------------------------------------------------- maths (mirrors engine/game.py)
@@ -482,6 +568,8 @@
       const step = cellH + gap;
       const FILL = 22;
       const done = [];
+      sfx("spins_start");
+      sfx("indiv_reel_spin", 0.55);
       reels.forEach((reel, i) => {
         if (lockedReels.has(i)) { done.push(Promise.resolve()); return; }
         const strip = reel.querySelector(".strip");
@@ -504,6 +592,8 @@
           strip.style.transition = "none";
           strip.style.transform = "translateY(0)";
           strip.replaceChildren(...finalGrid[i].map(makeCell));
+          sfx(i === REELS - 1 ? "reel_stop" : "reel_stop_click", 0.7);
+          if (finalGrid[i].includes(ID.AFRICA)) sfx("africa_symbol");
         }));
       });
       await Promise.all(done);
@@ -518,16 +608,18 @@
           strip.replaceChildren(...grid[i].map((s) => { const c = makeCell(s); c.classList.add("expand"); return c; }));
         }
       }
-      if (any) await sleep(500);
+      if (any) { sfx("sticky_wild"); await sleep(500); }
     }
 
     async function presentWins(wins, total, quick) {
       if (!wins.length) return;
       const per = quick ? 650 : 1100;
       setMsg(`WIN ${money(total)}`, true);
+      sfx(total >= betCents() * 5 ? "med_win" : "small_win");
       for (let pass = 0; pass < (quick ? 1 : 2); pass++) {
         for (const w of wins) {
           highlight(w);
+          if (pass === 0 && ANIMAL_SFX[w.sym]) sfx(ANIMAL_SFX[w.sym], 0.65);
           setMsg(`LINE ${w.line} · ${NAME(w.sym).toUpperCase()} × ${w.chain} · ${money(w.cents)}`, true);
           await sleep(per);
         }
@@ -616,11 +708,12 @@
           cellEl(r, c).classList.add(raw[r][c] === ID.AFRICA ? "hit" : "dim");
         }
         setMsg("BONUS TRIGGERED!", true);
+        sfx("bonus_triggered");
         await sleep(1200);
         clearHighlights();
         showCard(`<h2>BONUS TRIGGERED</h2><div class="big">${n} FREE GAMES</div>
                   <p>${scatters} Africa symbols anywhere on the reels.</p>
-                  <p class="sub">Wilds on reels 2, 3 and 4 expand and <b>stay wild</b> for the rest of the feature.<br>Tap to start.</p>`);
+                  <p class="sub">Wilds expand and <b>stay wild</b> for the rest of the feature.<br>Tap to start.</p>`);
         await waitDismiss(4000);
         capped = (await runFreeGames(n)) || capped;
       }
@@ -632,6 +725,7 @@
       }
       state.credits += state.roundWin; save();
       if (state.roundWin >= bet * 25) {
+        sfx("lion_roar");
         showCard(`<h2>BIG WIN!</h2><div class="big">${money(state.roundWin)}</div><p class="sub">Tap to continue</p>`);
         await waitDismiss(3500);
       }
@@ -644,6 +738,7 @@
       const badge = $("fsBadge");
       badge.hidden = false;
       $("modeBadge").textContent = "FREE GAMES · WILDS STAY";
+      bgm("bonus_games_bgm");
       while (remaining > 0) {
         remaining--; played++;
         badge.innerHTML = `<span class="fg">FREE GAME ${played} OF ${awarded}</span>`;
@@ -677,6 +772,7 @@
       $("modeBadge").textContent = "10 LINES · PAYS " + (D.payDirection === "left" ? "LEFT TO RIGHT" : "RIGHT TO LEFT");
       reels.forEach((r) => r.classList.remove("locked"));
       state.sticky = new Set();
+      bgm("normal_game_bgm");
       showCard(`<h2>FREE GAMES COMPLETE</h2><div class="big">${money(Math.min(featureWin, CAP))}</div>
                 <p class="sub">${awarded} free games played · tap to continue</p>`);
       await waitDismiss(4000);
@@ -707,9 +803,9 @@
         <div class="paytable">${rows}${wild}${africa}</div>
         <ul class="rules">
           <li>All 10 lines are always played. Wins pay on adjacent reels ${dir}, 3 or more of a kind, highest win per line only.</li>
-          <li><b>WILD</b> substitutes for every symbol except Africa. When a Wild lands anywhere on a reel it expands to cover that whole reel before wins are paid.</li>
+          <li><b>WILD</b> substitutes for every symbol except Africa and lands only on reels 2, 3 and 4. When a Wild lands anywhere on a reel it expands to cover that whole reel before wins are paid.</li>
           <li><b>AFRICA</b> is a scatter: 3, 4 or 5 anywhere on the reels award 10, 15 or 20 <b>Free Games</b> at the triggering bet. Only one Africa can land on a reel at a time.</li>
-          <li>During Free Games, Wilds land only on reels 2, 3 and 4. Each expands its reel and <b>stays wild</b> for the rest of the feature.${D.retrigger ? " Free Games can be retriggered." : " Free Games cannot be retriggered."}</li>
+          <li>During Free Games, each Wild that lands expands its reel and <b>stays wild</b> for the rest of the feature.${D.retrigger ? " Free Games can be retriggered." : " Free Games cannot be retriggered."}</li>
           <li>Maximum payout per play is <b>${money(CAP)}</b>, including Free Games. Bets: ${D.betLevelsCents.map(money).join(", ")}.</li>
           <li>Theoretical return to player: <b>${rtp}</b>. Malfunction voids all pays and plays.</li>
         </ul>
@@ -733,6 +829,10 @@
     $("betUp").addEventListener("click", () => { if (!state.busy && state.betIdx < D.betLevelsCents.length - 1) { state.betIdx++; save(); renderMeters(); } });
     $("helpBtn").addEventListener("click", () => { if (!state.busy) { showCard(helpHtml()); waitDismiss(0); } });
     $("addCredits").addEventListener("click", (e) => { e.preventDefault(); state.credits += 2000; save(); renderMeters(); setMsg("$20.00 ADDED"); });
+    $("muteBtn").addEventListener("click", (e) => { e.stopPropagation(); toggleMute(); });
+    // Browsers only let audio start after a gesture; the first tap or key anywhere unlocks it.
+    window.addEventListener("pointerdown", audioUnlock, { capture: true });
+    window.addEventListener("keydown", audioUnlock, { capture: true });
     window.addEventListener("keydown", (e) => { if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); $("spinBtn").click(); } });
     window.addEventListener("resize", () => { if (!state.busy) clearHighlights(); });
 
@@ -742,6 +842,7 @@
     probeArt().then(() => {
       $("spinBtn").disabled = false;
       load();
+      audioInit();
       state.grid = D.baseStrips.map((s) => windowAt(s, randStop()).map((x) => (x === ID.WILD || x === ID.AFRICA) ? ID.A : x));
       renderStatic(state.grid);
       renderMeters();

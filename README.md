@@ -18,12 +18,24 @@ engine/            Python maths engine
   simulate.py      Monte Carlo: Free Games EV, full-game validation, volatility
   tune.py          solves the paytable scale for a target RTP
   parsheet.py      writes the Markdown par sheet into the docs folder
-  export.py        writes web/gamedata.js for the browser game
+  export.py        writes web/gamedata.js (rules, strips, art + audio manifests)
+  slice_art.py     cuts the symbol contact sheet into per-symbol WebP tiles
+  encode_audio.js  encodes the source WAVs to MP3 for the web build (Node + lamejs)
 tests/             engine tests incl. exact-vs-simulation cross-checks
 web/               the playable game (static HTML, no build step)
-  assets/symbols/  drop the symbol PNGs here (see README inside)
-SafariTime_Docs_v0.1.0-alpha/   design + maths documentation (versioned)
+  assets/symbols/  symbol art (see README inside)
+  assets/audio/    MP3s generated from the docs folder's source WAVs
+SafariTime_Docs_v0.2.0-alpha/   design + maths documentation, source audio (versioned)
 _version_archive/               frozen copies of superseded doc versions
+```
+
+## Rebuild the assets
+
+```bash
+python -m engine.slice_art SHEET.jpg AFRICA.jpg
+npm install lamejs@1.2.1
+node engine/encode_audio.js SafariTime_Docs_v0.2.0-alpha/03_Assets_Audio web/assets/audio --lamejs node_modules/lamejs/lame.all.js
+python -m engine.export
 ```
 
 ## Run the maths
@@ -52,4 +64,4 @@ per line. A WILD anywhere on a reel expands to fill it before pays. 3/4/5
 AFRICA anywhere award 10/15/20 Free Games; in Free Games WILDs land only on
 reels 2-4, expand, and stay for the rest of the feature. $800 cap per play.
 
-Design decisions and the maths are in `SafariTime_Docs_v0.1.0-alpha/`.
+Design decisions and the maths are in the `SafariTime_Docs_v*/` folder.

@@ -41,9 +41,22 @@ def art_manifest() -> dict:
     return found
 
 
+def audio_manifest() -> dict:
+    """Sound files present in web/assets/audio, keyed by lowercase stem."""
+    folder = os.path.join(WEB, "assets", "audio")
+    found = {}
+    if os.path.isdir(folder):
+        for name in sorted(os.listdir(folder)):
+            stem, ext = os.path.splitext(name)
+            if ext.lower() in (".mp3", ".ogg", ".wav") and stem.lower() not in found:
+                found[stem.lower()] = f"assets/audio/{name}"
+    return found
+
+
 def payload(rtp: dict = None) -> dict:
     return {
         "art": art_manifest(),
+        "audio": audio_manifest(),
         "title": "Safari Time",
         "generated": date.today().isoformat(),
         "symbols": {str(i): cfg.SYMBOL_NAMES[i] for i in cfg.SYMBOL_NAMES},
