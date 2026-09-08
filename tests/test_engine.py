@@ -114,10 +114,18 @@ class Evaluation(unittest.TestCase):
         self.assertEqual(game.count_scatters(raw), 3, "raw grid untouched")
 
     def test_scatter_awards(self):
+        # The feature prize is the total bet times the number of free games.
         self.assertEqual(game.scatter_award(2, 100), (0, 0))
-        self.assertEqual(game.scatter_award(3, 100), (0, 10))
-        self.assertEqual(game.scatter_award(4, 100), (0, 15))
-        self.assertEqual(game.scatter_award(5, 100), (0, 20))
+        self.assertEqual(game.scatter_award(3, 100), (1000, 10))
+        self.assertEqual(game.scatter_award(4, 100), (1500, 15))
+        self.assertEqual(game.scatter_award(5, 100), (2000, 20))
+
+    def test_wild_and_scatter_never_share_a_window(self):
+        for strips in (cfg.BASE_STRIPS, cfg.FEATURE_STRIPS):
+            for strip in strips:
+                for s in range(cfg.STOPS):
+                    w = game.window(strip, s)
+                    self.assertFalse(cfg.WILD in w and cfg.AFRICA in w)
 
     def test_fast_scorer_matches_brute_force(self):
         rng = random.Random(42)

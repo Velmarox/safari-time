@@ -100,15 +100,15 @@ assert len(PAYLINES) == LINES
 
 PAYTABLE = {
     #            3    4     5
-    J:        (  9,  35,  120),
-    Q:        (  9,  35,  120),
-    K:        ( 20,  70,  180),
-    A:        ( 20,  70,  180),
-    GIRAFFE:  ( 30,  90,  300),
-    ZEBRA:    ( 30, 140,  400),
-    RHINO:    ( 40, 200,  600),
-    ELEPHANT: ( 80, 350,  950),
-    LION:     (120, 450, 1500),
+    J:        (  9,  32,  110),
+    Q:        (  9,  32,  110),
+    K:        ( 18,  65,  170),
+    A:        ( 18,  65,  170),
+    GIRAFFE:  ( 28,  85,  280),
+    ZEBRA:    ( 28, 130,  375),
+    RHINO:    ( 38, 185,  560),
+    ELEPHANT: ( 75, 325,  900),
+    LION:     (110, 420, 1400),
 }
 
 
@@ -126,10 +126,11 @@ BEST_PAY = {n: max(line_pay(s, n) for s in PAY_SYMBOLS) for n in range(0, 6)}
 # ---------------------------------------------------------------------------
 # 7. SCATTER / FREE GAMES
 # ---------------------------------------------------------------------------
-# Africa scatters pay nothing on their own; they only award Free Games.
+# Triggering the feature also pays a prize equal to the total bet multiplied
+# by the number of Free Games awarded (10x / 15x / 20x total bet).
 
-SCATTER_PAY = {3: 0, 4: 0, 5: 0}          # multiples of TOTAL bet
 FREE_SPINS_AWARD = {3: 10, 4: 15, 5: 20}
+SCATTER_PAY = dict(FREE_SPINS_AWARD)      # multiples of TOTAL bet
 
 # Free Games wild behaviour:
 #   "column" - a Wild expands its whole reel and that reel STAYS wild for the
@@ -201,13 +202,42 @@ def build_strip(counts_for_reel: dict, stops: int = STOPS) -> list:
     return strip
 
 
+def _keep_wild_clear_of_scatter(strip: list) -> list:
+    """
+    A Wild must never share a 3-row window with an Africa: the Wild expands
+    over the whole reel, and it does not substitute for Africa, so the two
+    showing together would be visually and mathematically ambiguous. If the
+    even spread put them within two stops of each other, swap the Wild with
+    the nearest low-symbol stop that is clear of every Africa.
+    """
+    n = len(strip)
+    africas = [i for i, s in enumerate(strip) if s == AFRICA]
+
+    def clear(i: int) -> bool:
+        return all(min((i - a) % n, (a - i) % n) >= ROWS for a in africas)
+
+    for w in [i for i, s in enumerate(strip) if s == WILD]:
+        if clear(w):
+            continue
+        for d in range(1, n):
+            candidates = [j for j in ((w + d) % n, (w - d) % n)
+                          if strip[j] in (J, Q, K, A) and clear(j)]
+            if candidates:
+                j = candidates[0]
+                strip[w], strip[j] = strip[j], strip[w]
+                break
+        else:
+            raise AssertionError("no stop available to separate Wild from Africa")
+    return strip
+
+
 def build_strips(counts: dict) -> list:
     strips = []
     for reel in range(REELS):
         per_reel = {sym: row[reel] for sym, row in counts.items() if row[reel] > 0}
         total = sum(per_reel.values())
         assert total == STOPS, f"reel {reel + 1} counts sum to {total}, need {STOPS}"
-        strips.append(build_strip(per_reel))
+        strips.append(_keep_wild_clear_of_scatter(build_strip(per_reel)))
     return strips
 
 
@@ -226,5 +256,17 @@ def _assert_one_scatter_per_window(strips: list, label: str) -> None:
                 )
 
 
-_assert_one_scatter_per_window(BASE_STRIPS, "base")
-_assert_one_scatter_per_window(FEATURE_STRIPS, "feature")
+def _assert_wild_never_meets_scatter(strips: list, label: str) -> None:
+    """Enforce: a Wild and an Africa are never visible on the same reel."""
+    for i, strip in enumerate(strips):
+        for s in range(STOPS):
+            window = [strip[(s + r) % STOPS] for r in range(ROWS)]
+            if WILD in window and AFRICA in window:
+                raise AssertionError(
+                    f"{label} reel {i + 1} stop {s}: Wild and Africa share a window"
+                )
+
+
+for _strips, _label in ((BASE_STRIPS, "base"), (FEATURE_STRIPS, "feature")):
+    _assert_one_scatter_per_window(_strips, _label)
+    _assert_wild_never_meets_scatter(_strips, _label)

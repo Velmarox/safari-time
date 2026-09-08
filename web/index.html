@@ -393,11 +393,12 @@
       audio.unlocked = true;
       audio.ctx.resume().then(() => bgm(audio.bgmName || "normal_game_bgm"));
     }
-    function sfx(name, vol = SFX_VOL, loop = false) {
+    function sfx(name, vol = SFX_VOL, loop = false, rate = 1) {
       const buf = audio.ctx && audio.unlocked && audio.buffers[name];
       if (!buf) return null;
       const src = audio.ctx.createBufferSource();
       src.buffer = buf; src.loop = loop;
+      src.playbackRate.value = rate;             // 2^(semitones/12); a whole step is 2^(2/12)
       const g = audio.ctx.createGain(); g.gain.value = vol;
       src.connect(g).connect(audio.master);
       src.start();
@@ -490,7 +491,28 @@
     const state = {
       credits: 0, betIdx: 0, busy: false, auto: false,
       grid: null, sticky: new Set(), roundWin: 0,
+      rolling: false, stopRequested: false, stopWaiters: [],
     };
+    // PLAY becomes STOP while the reels roll; pressing it lands the rest fast.
+    function requestStop() {
+      state.stopRequested = true;
+      state.stopWaiters.splice(0).forEach((resolve) => resolve());
+    }
+    function waitStop() {
+      return new Promise((resolve) => { if (state.stopRequested) resolve(); else state.stopWaiters.push(resolve); });
+    }
+    function cancelAuto() {
+      state.auto = false;
+      $("autoBtn").classList.remove("on");
+      renderSpinButton();
+    }
+    function renderSpinButton() {
+      const b = $("spinBtn");
+      const stop = state.rolling || state.auto;
+      b.textContent = stop ? "Stop" : "Play";
+      b.classList.toggle("stop", stop);
+      b.disabled = stop ? false : state.busy;
+    }
     const betCents = () => D.betLevelsCents[state.betIdx];
     const lineBet = () => betCents() / D.lines;
 
@@ -561,17 +583,28 @@
     }
 
     // ---------------------------------------------------------------- spin animation
+    // Reels roll and land one at a time, left to right, with a breath between
+    // landings so the anticipation can climb. Pressing STOP lands the rest fast.
+    const ROLL_MS = 600;           // one reel's roll before it lands
+    const PAUSE_MS = 320;          // breath between one landing and the next roll
+    const ANTICIPATION_MS = 1500;  // longer roll once two Africa are already showing
+    const FAST_MS = 110;           // per-reel roll after STOP
+    const WHOLE_STEP = Math.pow(2, 2 / 12);
+    const SCATTERS_TO_TRIGGER = 3;
+
     async function spinReels(strips, prevGrid, finalGrid, lockedReels) {
       const cellH = reels[0].querySelector(".cell")?.getBoundingClientRect().height
         || parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell"));
       const gap = parseFloat(getComputedStyle($("window")).gap) || 4;
       const step = cellH + gap;
       const FILL = 22;
-      const done = [];
+      state.rolling = true; state.stopRequested = false;
+      renderSpinButton();
       sfx("spins_start");
-      sfx("indiv_reel_spin", 0.55);
-      reels.forEach((reel, i) => {
-        if (lockedReels.has(i)) { done.push(Promise.resolve()); return; }
+      let africaHits = 0;
+      for (let i = 0; i < REELS; i++) {
+        if (lockedReels.has(i)) continue;
+        const reel = reels[i];
         const strip = reel.querySelector(".strip");
         // DOM order top->bottom: lead cell, final window, fillers ending in the previous window.
         const lead = strips[i][cryptoStop()];
@@ -580,23 +613,43 @@
         const seq = [lead, ...finalGrid[i], ...fillers, ...prevGrid[i]];
         strip.style.transition = "none";
         strip.replaceChildren(...seq.map(makeCell));
-        const startY = -(seq.length - ROWS) * step;
-        strip.style.transform = `translateY(${startY}px)`;
+        strip.style.transform = `translateY(${-(seq.length - ROWS) * step}px)`;
         strip.classList.add("blur");
         void strip.offsetHeight;                       // commit start position
-        const dur = 900 + i * 260;
+
+        const fast = state.stopRequested;
+        const anticipating = !fast && africaHits >= SCATTERS_TO_TRIGGER - 1;
+        const dur = fast ? FAST_MS : anticipating ? ANTICIPATION_MS : ROLL_MS;
+        if (!fast) sfx("indiv_reel_spin", 0.55);
         strip.style.transition = `transform ${dur}ms cubic-bezier(.18,.82,.28,1.09)`;
         strip.style.transform = `translateY(${-step}px)`;
-        done.push(sleep(dur + 40).then(() => {
-          strip.classList.remove("blur");
-          strip.style.transition = "none";
-          strip.style.transform = "translateY(0)";
-          strip.replaceChildren(...finalGrid[i].map(makeCell));
-          sfx(i === REELS - 1 ? "reel_stop" : "reel_stop_click", 0.7);
-          if (finalGrid[i].includes(ID.AFRICA)) sfx("africa_symbol");
-        }));
-      });
-      await Promise.all(done);
+        let landed = false;
+        const natural = sleep(dur + 40).then(() => { landed = true; });
+        await Promise.race([natural, waitStop()]);
+        if (!landed) {                                 // STOP pressed mid-roll: retarget and finish now
+          strip.style.transition = `transform ${FAST_MS}ms ease-out`;
+          strip.style.transform = `translateY(${-step}px)`;
+          await sleep(FAST_MS + 30);
+        }
+        strip.classList.remove("blur");
+        strip.style.transition = "none";
+        strip.style.transform = "translateY(0)";
+        strip.replaceChildren(...finalGrid[i].map(makeCell));
+        sfx(i === REELS - 1 ? "reel_stop" : "reel_stop_click", 0.7);
+
+        if (finalGrid[i].includes(ID.AFRICA)) {
+          africaHits++;
+          // Only sound off while the bonus is still reachable: the Africa seen so
+          // far plus every reel still to land must be able to make three.
+          const reelsLeft = REELS - 1 - i;
+          if (africaHits + reelsLeft >= SCATTERS_TO_TRIGGER) {
+            sfx("africa_symbol", 0.9, false, Math.pow(WHOLE_STEP, africaHits - 1));
+          }
+        }
+        if (i < REELS - 1 && !state.stopRequested) await sleep(PAUSE_MS);
+      }
+      state.rolling = false;
+      renderSpinButton();
     }
 
     async function animateExpansion(raw, grid) {
@@ -657,8 +710,7 @@
       const bet = betCents();
       if (state.credits < bet) {
         setMsg("INSUFFICIENT CREDITS");
-        state.auto = false; $("autoBtn").classList.remove("on");
-        $("spinBtn").textContent = "Play"; $("spinBtn").classList.remove("stop");
+        cancelAuto();
         return;
       }
       try {
@@ -669,20 +721,20 @@
         state.credits += bet; save();          // refund the wager on any script fault
         hideCard();
       } finally {
-        state.busy = false; state.sticky = new Set();
+        state.busy = false; state.rolling = false; state.sticky = new Set();
         reels.forEach((r) => r.classList.remove("locked"));
         $("fsBadge").hidden = true;
         renderMeters();
-        $("spinBtn").disabled = false;
+        renderSpinButton();
       }
       if (state.auto && state.credits >= betCents()) { await sleep(700); if (state.auto) playRound(); }
-      else if (state.auto) { state.auto = false; $("autoBtn").classList.remove("on"); $("spinBtn").textContent = "Play"; $("spinBtn").classList.remove("stop"); setMsg("INSUFFICIENT CREDITS"); }
+      else if (state.auto) { cancelAuto(); setMsg("INSUFFICIENT CREDITS"); }
     }
 
     async function runRound(bet) {
       state.busy = true; state.roundWin = 0; state.sticky = new Set();
       state.credits -= bet; save(); renderMeters(); clearHighlights();
-      $("spinBtn").disabled = true;
+      renderSpinButton();
       setMsg("GOOD LUCK");
 
       // ---- base spin
@@ -700,19 +752,23 @@
       await presentWins(wins, total, false);
 
       // ---- free games
-      if (scatters >= 3) {
-        const n = D.freeSpins[String(Math.min(scatters, 5))];
+      if (scatters >= SCATTERS_TO_TRIGGER) {
+        const key = String(Math.min(scatters, 5));
+        const n = D.freeSpins[key];
+        // The trigger itself pays: total bet x number of free games awarded.
+        const prize = (D.scatterPay[key] || 0) * bet;
         // Flash the scatters.
         clearHighlights();
         for (let r = 0; r < REELS; r++) for (let c = 0; c < ROWS; c++) {
           cellEl(r, c).classList.add(raw[r][c] === ID.AFRICA ? "hit" : "dim");
         }
-        setMsg("BONUS TRIGGERED!", true);
+        if (prize) capped = addWin(prize) || capped;
+        setMsg(prize ? `BONUS TRIGGERED! ${money(prize)}` : "BONUS TRIGGERED!", true);
         sfx("bonus_triggered");
         await sleep(1200);
         clearHighlights();
         showCard(`<h2>BONUS TRIGGERED</h2><div class="big">${n} FREE GAMES</div>
-                  <p>${scatters} Africa symbols anywhere on the reels.</p>
+                  <p>${scatters} Africa symbols anywhere on the reels.${prize ? `<br>Bonus prize <b>${money(prize)}</b> (${n} × ${money(bet)} bet).` : ""}</p>
                   <p class="sub">Wilds expand and <b>stay wild</b> for the rest of the feature.<br>Tap to start.</p>`);
         await waitDismiss(4000);
         capped = (await runFreeGames(n)) || capped;
@@ -789,7 +845,11 @@
           <b>5</b>${money(p[2] * lb)}<br><b>4</b>${money(p[1] * lb)}<br><b>3</b>${money(p[0] * lb)}</div></div>`;
       }).join("");
       const wild = `<div class="pt">${makeCell(ID.WILD).outerHTML}<div class="pays">Substitutes for all<br>except Africa.<br>Expands the reel.</div></div>`;
-      const africa = `<div class="pt">${makeCell(ID.AFRICA).outerHTML}<div class="pays"><b>3</b>10 free games<br><b>4</b>15 free games<br><b>5</b>20 free games</div></div>`;
+      const bet = betCents();
+      const africa = `<div class="pt">${makeCell(ID.AFRICA).outerHTML}<div class="pays">${[3, 4, 5].map((k) => {
+        const n = D.freeSpins[String(k)], prize = (D.scatterPay[String(k)] || 0) * bet;
+        return `<b>${k}</b>${n} free games${prize ? ` + ${money(prize)}` : ""}`;
+      }).join("<br>")}</div></div>`;
       const lines = D.paylines.map((pl, i) => {
         const on = new Set(pl.map(([r, c]) => c * 5 + r));
         let cells = "";
@@ -803,8 +863,9 @@
         <div class="paytable">${rows}${wild}${africa}</div>
         <ul class="rules">
           <li>All 10 lines are always played. Wins pay on adjacent reels ${dir}, 3 or more of a kind, highest win per line only.</li>
-          <li><b>WILD</b> substitutes for every symbol except Africa and lands only on reels 2, 3 and 4. When a Wild lands anywhere on a reel it expands to cover that whole reel before wins are paid.</li>
-          <li><b>AFRICA</b> is a scatter: 3, 4 or 5 anywhere on the reels award 10, 15 or 20 <b>Free Games</b> at the triggering bet. Only one Africa can land on a reel at a time.</li>
+          <li><b>WILD</b> substitutes for every symbol except Africa and lands only on reels 2, 3 and 4. When a Wild lands anywhere on a reel it expands to cover that whole reel before wins are paid. A Wild never shares a reel with an Africa.</li>
+          <li><b>AFRICA</b> is a scatter: 3, 4 or 5 anywhere on the reels award 10, 15 or 20 <b>Free Games</b> at the triggering bet, plus a bonus prize of the total bet times the number of free games (10×, 15× or 20× bet). Only one Africa can land on a reel at a time.</li>
+          <li>Reels land one at a time. Press <b>STOP</b> while they roll to land them straight away.</li>
           <li>During Free Games, each Wild that lands expands its reel and <b>stays wild</b> for the rest of the feature.${D.retrigger ? " Free Games can be retriggered." : " Free Games cannot be retriggered."}</li>
           <li>Maximum payout per play is <b>${money(CAP)}</b>, including Free Games. Bets: ${D.betLevelsCents.map(money).join(", ")}.</li>
           <li>Theoretical return to player: <b>${rtp}</b>. Malfunction voids all pays and plays.</li>
@@ -815,14 +876,14 @@
 
     // ---------------------------------------------------------------- wire up
     $("spinBtn").addEventListener("click", () => {
-      if (state.auto) { state.auto = false; $("autoBtn").classList.remove("on"); $("spinBtn").textContent = "Play"; return; }
+      if (state.rolling) { requestStop(); if (state.auto) cancelAuto(); return; }
+      if (state.auto) { cancelAuto(); return; }
       playRound();
     });
     $("autoBtn").addEventListener("click", () => {
       state.auto = !state.auto;
       $("autoBtn").classList.toggle("on", state.auto);
-      $("spinBtn").textContent = state.auto ? "Stop" : "Play";
-      $("spinBtn").classList.toggle("stop", state.auto);
+      renderSpinButton();
       if (state.auto && !state.busy) playRound();
     });
     $("betDown").addEventListener("click", () => { if (!state.busy && state.betIdx > 0) { state.betIdx--; save(); renderMeters(); } });

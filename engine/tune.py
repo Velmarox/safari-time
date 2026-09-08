@@ -1,12 +1,12 @@
 """
 Safari Time - RTP tuner.
 
-Every award in the game is a multiple of the line bet, and scatters pay
-nothing, so the whole RTP is LINEAR in the paytable: double every entry and
-the RTP doubles. That makes hitting a target trivial once we know the current
-figure:
+Every line award is a multiple of the line bet, so the line and feature parts
+of RTP are LINEAR in the paytable: double every entry and they double. The
+scatter prize is a fixed multiple of the total bet and does not move, so it is
+held out of the scaling:
 
-    scale = target_rtp / current_rtp
+    scale = (target_rtp - scatter_rtp) / (current_rtp - scatter_rtp)
 
 The scaled paytable is then rounded to "nice" numbers that read well on a pay
 screen, and re-solved so you see exactly what the rounding cost you.
@@ -77,9 +77,11 @@ def main(argv: list) -> None:
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args(argv)
 
-    current = simulate.total_rtp(features=args.features, seed=args.seed)["total_rtp"]
-    scale = args.target / current
-    print(f"Current RTP {current:.4%}  ->  target {args.target:.2%}  ->  scale x{scale:.4f}")
+    r = simulate.total_rtp(features=args.features, seed=args.seed)
+    current, scatter = r["total_rtp"], r["scatter_rtp"]
+    scale = (args.target - scatter) / (current - scatter)
+    print(f"Current RTP {current:.4%} (of which scatter prize {scatter:.4%})  ->  "
+          f"target {args.target:.2%}  ->  line paytable scale x{scale:.4f}")
 
     proposal = scaled_paytable(scale)
     achieved = rtp_with_paytable(proposal, args.features, args.seed)
